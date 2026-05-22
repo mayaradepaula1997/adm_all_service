@@ -17,19 +17,17 @@ public class Enterprise {
     private Long id;
 
     @NotBlank(message = "O nome é obrigatório")
-    @Column(name = "nome")
     private String name;
 
     @NotBlank(message = "cnpj é obrigatório")
     private String cnpj;
 
-    @Column(name = "data_criação")
     private LocalDateTime creation;
 
     //RELACIONAMENTO
     @NotNull(message = "o campo cidade é obrigatorio")
     @ManyToOne(fetch = FetchType.LAZY)         //Só busca a cidade quando precisar
-    @JoinColumn(name = "cidade_id")
+    @JoinColumn(name = "city_id")
     private City city;
 
     @JsonIgnore
