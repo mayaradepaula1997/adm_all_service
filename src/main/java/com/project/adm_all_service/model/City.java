@@ -39,7 +39,6 @@ public class City {
     @OneToMany(mappedBy = "city")
     private List<Collaborator> collaborators;
 
-
     @OneToMany(mappedBy = "city")
     @JsonManagedReference
     private List<Apontamento> apontamentos;
@@ -59,9 +58,12 @@ public class City {
         this.apontamentos = apontamentos;
     }
 
+    @PrePersist //Antes que salvar no banco de dados, vai salvar o momento de criação
+    public void prePersist() {
+        this.creation = LocalDateTime.now();
+    }
+
    //GETTER E SETTER
-
-
     public Long getId() {
         return id;
     }

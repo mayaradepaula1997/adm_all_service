@@ -4,7 +4,6 @@ import com.project.adm_all_service.model.Closing;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
 public interface ClosingRepository extends JpaRepository<Closing, Long> , JpaSpecificationExecutor<Closing> {
