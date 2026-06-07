@@ -48,6 +48,7 @@ public class SecurityConfiguration {
 
     //Quando analisar permissões em métodos, considerar também a hierarquia das roles
     //Ex: @PreAuthorize("hasRole('ADMIN')")
+    @Bean
     public MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
         handler.setRoleHierarchy(roleHierarchy);

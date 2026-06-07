@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "tb_usuario")
+@Table(name = "tb_user")
 public class User implements UserDetails {
 
     @Id
@@ -21,20 +21,20 @@ public class User implements UserDetails {
     private Long id;
 
     @NotBlank(message = "O nome é obrigatório")
-    @Column(name = "nome")
+    @Column(name = "name")
     private String name;
 
     @NotBlank(message = "O e-mail é obrigatório")
     private String email;
 
-    @Column(name = "senha")
+    @Column(name = "password")
     private String password;
 
 
     @ElementCollection(fetch = FetchType.EAGER) //Esse atributo é uma coleção de elementos simples e não uma entidade
     @Enumerated(EnumType.STRING)                //Essa anotação faz com que o enum seja salvo no BD como texto e não como numero
     @CollectionTable(                           //Cria uma tabela auxiliar
-            name = "tb_usuario_roles",
+            name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id")
     )
     @Column(name = "role")
@@ -42,13 +42,13 @@ public class User implements UserDetails {
 
     //RELACIONAMENTOS
     @NotNull(message = "O campo cidade é obrigatório")
-    @ManyToOne
-    @JoinColumn(name = "cidade_id") // FK no banco
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "city_id") // FK no banco
     private City city;            //Varios usuários estão relacionados a uma cidade
 
     @NotNull(message = "O campo empresa é obrigatório")
-    @ManyToOne
-    @JoinColumn(name = "empresa_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "enterprise_id")
     private Enterprise enterprise;
 
     //Construtor Vazio
