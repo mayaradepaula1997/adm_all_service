@@ -12,7 +12,7 @@ import java.util.Map;
 
 //CLASSE DE FECHAMENTO
 @Entity
-@Table(name = "tb_fechamento")
+@Table(name = "tb_closing")
 public class Closing {
 
     @Id
@@ -20,49 +20,51 @@ public class Closing {
     private Long id;
 
     @NotNull(message = "Campo obrigatório")
-    @Column(name = "mês")
+    @Column(name = "month")
     private Integer month;
 
     @NotNull(message = "Campo obrigatório")
-    @Column(name = "ano")
+    @Column(name = "year")
     private Integer year;
 
     @NotNull(message = "Campo obrigatório")
-    @Column(name = "quinzena")
+    @Column(name = "fortnight")
     private Integer fortnight;
 
     @NotNull(message = "Campo obrigatório")
-    @Column(name = "valor_diaria_padrão")
+    @Column(name = "default_daily_value")
     private BigDecimal dailyValue;
 
     @NotNull(message = "Campo obrigatório")
-    @Column(name = "data_fechamento")
+    @Column(name = "closed_at")
     private LocalDateTime closedIn;
 
-    @Column(name = "status")
+    @Column(name = "closing_status")
     @Enumerated(EnumType.STRING)
     private ClosingStatus closingStatus;
 
     //RELACIONAMENTO
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "empresa_id")
+    @JoinColumn(name = "enterprise_id")
     @NotNull(message = "Campo obrigatório")
     private Enterprise enterprise;  //Muitos fechamentos estão relacionados a uma empresa
 
     @ManyToOne
-    @JoinColumn(name = "fechado_por_usuario")
+    @JoinColumn(name = "closed_by_user_id")
     @NotNull(message = "Campo obrigatório")
     private User closedBy;     //Muitos fechamentos estão relacionados com um usuário
 
 
-    //MAP: Para guardar o valor da diária de cada colaborador
-    @ElementCollection                                  //Sinaliza que é uma lista de valores simples e não uma tabela
-    @CollectionTable(name = "fechamento_diarias")       //Criar uma tabela chamada "fechamento_diarias"
-    @MapKeyColumn(name = "colaborador_id")
-    @Column(name = "valor")
-    @Valid                                              //Para garantir as validações internas do parametro
+    // MAP: Coleção de elementos atualizada para inglês
+    @ElementCollection               //Sinaliza que é uma lista de valores simples e não uma tabela
+    @CollectionTable(
+        name = "closing_daily_values" //Criar uma tabela chamada "closing_daily_values"
+    )
+    @MapKeyColumn(name = "collaborator_id") // ID do colaborador em inglês
+    @Column(name = "value") // Nome do valor em inglês
+    @Valid
     @NotNull
-    Map<@NotNull Long, @NotNull @Positive BigDecimal> valuesPerEmployee;
+    private Map<@NotNull Long, @NotNull @Positive BigDecimal> valuesPerEmployee;
 
 
     public Closing() {

@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "tb_empresa")
+@Table(name = "tb_enterprise")
 public class Enterprise {
 
     @Id
@@ -22,6 +22,7 @@ public class Enterprise {
     @NotBlank(message = "cnpj é obrigatório")
     private String cnpj;
 
+    @Column(name = "creation_date")
     private LocalDateTime creation;
 
     //RELACIONAMENTO

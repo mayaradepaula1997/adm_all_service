@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "tb_colaborador")
+@Table(name = "tb_collaborator")
 public class Collaborator {
 
     @Id
@@ -18,7 +18,7 @@ public class Collaborator {
     private Long id;
 
     @NotBlank(message = "O nome é obrigatorio")
-    @Column(name = "nome")
+    @Column(name = "name")
     private String name;
 
     @NotBlank(message = "O cpf é obrigatorio")
@@ -26,39 +26,39 @@ public class Collaborator {
 
     private String rg;
 
-    @Column(name = "data_de_nascimento")
+    @Column(name = "birth_date")
     private LocalDate date_of_birth;
 
-    @Column(name = "endereço")
+    @Column(name = "address")
     private String address;
 
     @NotBlank(message = "Informe a chave pix")
     private String pix;
 
-    @Column(name = "data_criação")
+    @Column(name = "creation_date")
     private LocalDateTime creation; //Data de criação
 
     //RELACIONAMENTOS
     @NotNull(message = "Informe a empresa")
-    @ManyToOne
-    @JoinColumn(name = "empresa_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "enterprise_id")
     private Enterprise enterprise;
 
     @NotNull(message = "Informe a cidade")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cidade_id")
+    @JoinColumn(name = "city_id")
     private City city;
 
     @JsonIgnore
     @OneToMany(mappedBy = "collaborator", cascade = CascadeType.ALL)
-    private List<Apontamento> apontamentos;
+    private List<Apontamento> appointments;
 
 
     //CONSTRUTOR
     public Collaborator() {
     }
 
-    public Collaborator(String name, String cpf, String rg, LocalDate date_of_birth, String address, String pix, LocalDateTime creation, Enterprise enterprise, City city, List<Apontamento> apontamentos) {
+    public Collaborator(String name, String cpf, String rg, LocalDate date_of_birth, String address, String pix, LocalDateTime creation, Enterprise enterprise, City city, List<Apontamento> appointments) {
         this.name = name;
         this.cpf = cpf;
         this.rg = rg;
@@ -68,7 +68,7 @@ public class Collaborator {
         this.creation = creation;
         this.enterprise = enterprise;
         this.city = city;
-        this.apontamentos = apontamentos;
+        this.appointments = appointments;
     }
 
     public Long getId() {
@@ -147,11 +147,11 @@ public class Collaborator {
         this.city = city;
     }
 
-    public List<Apontamento> getApontamentos() {
-        return apontamentos;
+    public List<Apontamento> getAppointments() {
+        return appointments;
     }
 
-    public void setApontamentos(List<Apontamento> apontamentos) {
-        this.apontamentos = apontamentos;
+    public void setAppointments(List<Apontamento> appointments) {
+        this.appointments = appointments;
     }
 }

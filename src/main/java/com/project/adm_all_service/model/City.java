@@ -9,21 +9,21 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "tb_cidade")
+@Table(name = "tb_city")
 public class City {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nome")
+    @Column(name = "name")
     @NotBlank(message = "O nome é obrigatorio")
     private String name;
 
     @NotBlank(message = "Campo UF é obrigatorio")
     private String uf;
 
-    @Column(name = "data_criacao")
+    @Column(name = "creation_date")
     private LocalDateTime creation; //Data de criação
 
     //RELACIONAMENTO
@@ -41,21 +41,21 @@ public class City {
 
     @OneToMany(mappedBy = "city")
     @JsonManagedReference
-    private List<Apontamento> apontamentos;
+    private List<Apontamento> appointments;
 
 
     //CONSTRUTOR
     public City() {
     }
 
-    public City(String name, String uf, LocalDateTime creation, List<User> users, List<Enterprise> enterprises, List<Collaborator> collaborators, List<Apontamento> apontamentos) {
+    public City(String name, String uf, LocalDateTime creation, List<User> users, List<Enterprise> enterprises, List<Collaborator> collaborators, List<Apontamento> appointments) {
         this.name = name;
         this.uf = uf;
         this.creation = creation;
         this.users = users;
         this.enterprises = enterprises;
         this.collaborators = collaborators;
-        this.apontamentos = apontamentos;
+        this.appointments = appointments;
     }
 
     @PrePersist //Antes que salvar no banco de dados, vai salvar o momento de criação
@@ -117,10 +117,10 @@ public class City {
     }
 
     public List<Apontamento> getApontamentos() {
-        return apontamentos;
+        return appointments;
     }
 
     public void setApontamentos(List<Apontamento> apontamentos) {
-        this.apontamentos = apontamentos;
+        this.appointments = apontamentos;
     }
 }

@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tb_apontamento")
+@Table(name = "tb_appointment")
 public class Apontamento {
 
     @Id
@@ -18,36 +18,37 @@ public class Apontamento {
     private Long id;
 
     @NotNull(message = "Campo obrigatótio")
-    @Column(name = "data")
+    @Column(name = "date")
     private LocalDate date;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "type_appointment")
     private TypeApontamento typeApontamento;
 
-    @Column(name = "observação")
+    @Column(name = "observation")
     private String observation;
 
-    @Column(name = "hora_extra")
+    @Column(name = "overtime")
     private BigDecimal overtime;
 
     @NotNull(message = "Campo obrigatótio")
-    @Column(name = "data_criação")
+    @Column(name = "creation_date")
     private LocalDateTime creation; //Data de criação
 
     //RELACIONAMENTOS
     @NotNull(message = "Campo obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "colaborador_id")
+    @JoinColumn(name = "collaborator_id")
     private Collaborator collaborator;
 
     @NotNull(message = "Campo obrigatório")
     @ManyToOne
-    @JoinColumn(name = "empresa_id")
+    @JoinColumn(name = "enterprise_id")
     private Enterprise enterprise;
 
     @NotNull(message = "Campo obrigatório")
     @ManyToOne
-    @JoinColumn(name = "cidade_id")
+    @JoinColumn(name = "city_id")
     @JsonBackReference
     private City city;
 
