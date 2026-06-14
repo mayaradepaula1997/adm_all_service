@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.validator.constraints.br.CPF;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,35 +19,34 @@ public class Collaborator {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "O nome é obrigatorio")
     @Column(name = "name")
     private String name;
 
-    @NotBlank(message = "O cpf é obrigatorio")
+    @Column(unique = true, nullable = false) //Anotação para sinalizar que esse é uma campo unico e não pode ser null
     private String cpf;
 
+    @Column(nullable = false)
     private String rg;
 
-    @Column(name = "birth_date")
+    @Column(name = "birth_date", nullable = false)
     private LocalDate date_of_birth;
 
-    @Column(name = "address")
+    @Column(nullable = false)
     private String address;
 
-    @NotBlank(message = "Informe a chave pix")
+    @Column(nullable = false)
     private String pix;
 
-    @Column(name = "creation_date")
+    @CreationTimestamp   //Preencher automaticamente a data e a hora da criação do registro
+    @Column(name = "creation_date", updatable = false)
     private LocalDateTime creation; //Data de criação
 
     //RELACIONAMENTOS
-    @NotNull(message = "Informe a empresa")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enterprise_id")
     private Enterprise enterprise;
 
-    @NotNull(message = "Informe a cidade")
-    @ManyToOne(fetch = FetchType.LAZY)
+     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id")
     private City city;
 
