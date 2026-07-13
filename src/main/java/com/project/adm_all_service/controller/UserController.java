@@ -11,7 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/admin/users")
 public class UserController {
 
     private final UserService userService;
@@ -57,7 +57,7 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}")
     @PreAuthorize("isAuthenticated() and hasRole('ADMIN_MASTER')")
     public ResponseEntity<UserResponseDto> update(@PathVariable Long id, @RequestBody UserUpdateDto dto){
 

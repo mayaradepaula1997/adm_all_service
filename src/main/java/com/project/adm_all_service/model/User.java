@@ -8,9 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "tb_user")
@@ -50,6 +48,9 @@ public class User implements UserDetails {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enterprise_id")
     private Enterprise enterprise;
+
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL )
+    private List<NoteIndicator> noteIndicators = new ArrayList<>();
 
     //Construtor Vazio
     public User() {
@@ -114,7 +115,14 @@ public class User implements UserDetails {
         this.enterprise = enterprise;
     }
 
-  
+    public List<NoteIndicator> getNoteIndicators() {
+        return noteIndicators;
+    }
+
+    public void setNoteIndicators(List<NoteIndicator> noteIndicators) {
+        this.noteIndicators = noteIndicators;
+    }
+
     //Quais roles o usuário possui - Coleção de permissoes
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {   //GrantedAuthority = permissão reconhecida pelo Spring

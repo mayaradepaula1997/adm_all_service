@@ -49,11 +49,11 @@ public class UserService {
 
 
         //Verificar se a cidade já existe
-        City city =  cityRepository.findById(dto.enterpriseId())
+        City city =  cityRepository.findById(dto.cityId())
                 .orElseThrow(()-> new ResourceNotFoundException("Cidade não encontrada"));
 
         //Verificar se a empresa já existe
-        Enterprise enterprise = enterpriseRepository.findById(dto.cityId())
+        Enterprise enterprise = enterpriseRepository.findById(dto.enterpriseId())
                 .orElseThrow(()-> new ResourceNotFoundException("Empresa não encontrada"));
 
         //Instância a classe usuário
