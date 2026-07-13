@@ -1,15 +1,13 @@
 package com.project.adm_all_service.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.validator.constraints.br.CPF;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+
 
 @Entity
 @Table(name = "tb_collaborator")
@@ -46,20 +44,18 @@ public class Collaborator {
     @JoinColumn(name = "enterprise_id")
     private Enterprise enterprise;
 
-     @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id")
     private City city;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "collaborator", cascade = CascadeType.ALL)
-    private List<Apontamento> appointments;
-
+    private List<LaunchAppointment>launchAppointments = new ArrayList<>();
 
     //CONSTRUTOR
     public Collaborator() {
     }
 
-    public Collaborator(String name, String cpf, String rg, LocalDate date_of_birth, String address, String pix, LocalDateTime creation, Enterprise enterprise, City city, List<Apontamento> appointments) {
+    public Collaborator(String name, String cpf, String rg, LocalDate date_of_birth, String address, String pix, LocalDateTime creation, Enterprise enterprise, City city) {
         this.name = name;
         this.cpf = cpf;
         this.rg = rg;
@@ -69,7 +65,6 @@ public class Collaborator {
         this.creation = creation;
         this.enterprise = enterprise;
         this.city = city;
-        this.appointments = appointments;
     }
 
     public Long getId() {
@@ -148,11 +143,4 @@ public class Collaborator {
         this.city = city;
     }
 
-    public List<Apontamento> getAppointments() {
-        return appointments;
-    }
-
-    public void setAppointments(List<Apontamento> appointments) {
-        this.appointments = appointments;
-    }
 }
