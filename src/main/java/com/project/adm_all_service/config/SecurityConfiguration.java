@@ -40,9 +40,11 @@ public class SecurityConfiguration {
                         ROLE_ADMIN_MASTER > ROLE_RH
                         ROLE_ADMIN_MASTER > ROLE_GESTOR
                         ROLE_ADMIN_MASTER > ROLE_APONTADOR
-                        ROLE_RH > ROLE_APONTADOR
-                        ROLE_GESTOR > ROLE_APONTADOR
+                       
                    """);
+
+        // ROLE_RH > ROLE_APONTADOR
+        // ROLE_GESTOR > ROLE_APONTADOR
 
     }
 
@@ -68,13 +70,15 @@ public class SecurityConfiguration {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/authentication").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN_MASTER")
-                        .requestMatchers("/rh/**").hasAnyRole("ADMIN_MASTER", "RH")
-                        .requestMatchers("/gestor/**").hasAnyRole("ADMIN_MASTER", "GESTOR")
-                        .requestMatchers("/apontador/**").hasAnyRole("ADMIN_MASTER", "RH", "GESTOR", "APONTADOR")
+                       .requestMatchers("/admin/**").hasRole("ADMIN_MASTER")
+                        //.requestMatchers("/rh/**").hasAnyRole("ADMIN_MASTER", "RH")
+                       // .requestMatchers("/gestor/**").hasAnyRole("ADMIN_MASTER", "GESTOR")
+                        .requestMatchers("/apontador/**").hasAnyRole("ADMIN_MASTER", "APONTADOR")
                         .anyRequest().authenticated()  //Qualquer outra rota precisa estar autenticada
 
                 )
+
+
 
                 // FILTRO JWT
                 .addFilterBefore(
