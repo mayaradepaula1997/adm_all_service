@@ -2,8 +2,8 @@ package com.project.adm_all_service.enums;
 
 public enum ClosingStatus {
 
-    ABERTO("aberto"),
-    FECHADO("fechado");
+    OPEN("open"),
+    CLOSED("closed");
 
     private final String closingStatus;
 

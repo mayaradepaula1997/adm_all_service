@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-//CLASSE DE FECHAMENTO
+//CLASSE DE FECHAMENTO DOS GESTO
 @Entity
 @Table(name = "tb_closing")
 public class Closing {
