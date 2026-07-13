@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -22,7 +24,8 @@ public class Enterprise {
     @NotBlank(message = "cnpj é obrigatório")
     private String cnpj;
 
-    @Column(name = "creation_date")
+    @CreationTimestamp //Preenche automaticamente a data e hora de criação
+    @Column(name = "creation_date", updatable = false)
     private LocalDateTime creation;
 
     //RELACIONAMENTO
@@ -33,22 +36,24 @@ public class Enterprise {
 
     @JsonIgnore
     @OneToMany(mappedBy = "enterprise", cascade = CascadeType.ALL)
-    private List<Collaborator> collaborators;
+    private List<Collaborator> collaborators = new ArrayList<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "enterprise", cascade = CascadeType.ALL)
-    private List<User> users;
+    private List<User> users = new ArrayList<>();
+
+    @OneToMany(mappedBy = "enterprise", cascade = CascadeType.ALL)
+    private List<NoteIndicator> noteIndicators = new ArrayList<>();
 
     public Enterprise() {
     }
 
-    public Enterprise(String name, String cnpj, LocalDateTime creation, City city, List<Collaborator> collaborators, List<User> users) {
+    public Enterprise(Long id, String name, String cnpj, LocalDateTime creation, City city) {
+        this.id = id;
         this.name = name;
         this.cnpj = cnpj;
         this.creation = creation;
         this.city = city;
-        this.collaborators = collaborators;
-        this.users = users;
     }
 
     public Long getId() {
@@ -101,5 +106,13 @@ public class Enterprise {
 
     public void setUsers(List<User> users) {
         this.users = users;
+    }
+
+    public List<NoteIndicator> getNoteIndicators() {
+        return noteIndicators;
+    }
+
+    public void setNoteIndicators(List<NoteIndicator> noteIndicators) {
+        this.noteIndicators = noteIndicators;
     }
 }
