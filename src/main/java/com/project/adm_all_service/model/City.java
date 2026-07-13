@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,39 +24,34 @@ public class City {
     @NotBlank(message = "Campo UF é obrigatorio")
     private String uf;
 
-    @Column(name = "creation_date")
+    @Column(name = "creation_date", updatable = false)
     private LocalDateTime creation; //Data de criação
 
     //RELACIONAMENTO
     @JsonIgnore
-    @OneToMany(mappedBy = "city")
-    private List<User> users;        //Uma cidade pode ter varios usuários
+    @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
+    private List<User> users = new ArrayList<>();        //Uma cidade pode ter varios usuários
 
     @JsonIgnore             //Evita loop
     @OneToMany(mappedBy = "city")
-    private List<Enterprise> enterprises;    //Uma cidade pode ter varias empresas
+    private List<Enterprise> enterprises = new ArrayList<>();    //Uma cidade pode ter varias empresas
 
     @JsonIgnore
-    @OneToMany(mappedBy = "city")
-    private List<Collaborator> collaborators;
+    @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
+    private List<Collaborator> collaborators = new ArrayList<>();  //Uma cidade pode ter varias colaboradores
 
-    @OneToMany(mappedBy = "city")
-    @JsonManagedReference
-    private List<Apontamento> appointments;
+    @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
+    private List<NoteIndicator> noteIndicators = new ArrayList<>();  //Uma cidade pode ter varios apontadores
 
 
     //CONSTRUTOR
     public City() {
     }
 
-    public City(String name, String uf, LocalDateTime creation, List<User> users, List<Enterprise> enterprises, List<Collaborator> collaborators, List<Apontamento> appointments) {
+    public City(String name, String uf, LocalDateTime creation) {
         this.name = name;
         this.uf = uf;
         this.creation = creation;
-        this.users = users;
-        this.enterprises = enterprises;
-        this.collaborators = collaborators;
-        this.appointments = appointments;
     }
 
     @PrePersist //Antes que salvar no banco de dados, vai salvar o momento de criação
@@ -116,11 +112,11 @@ public class City {
         this.collaborators = collaborators;
     }
 
-    public List<Apontamento> getApontamentos() {
-        return appointments;
+    public List<NoteIndicator> getNoteIndicators() {
+        return noteIndicators;
     }
 
-    public void setApontamentos(List<Apontamento> apontamentos) {
-        this.appointments = apontamentos;
+    public void setNoteIndicators(List<NoteIndicator> noteIndicators) {
+        this.noteIndicators = noteIndicators;
     }
 }

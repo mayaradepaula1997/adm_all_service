@@ -1,5 +1,6 @@
 package com.project.adm_all_service.controller;
 
+import com.project.adm_all_service.dtos.request.CityCreateRequestDto;
 import com.project.adm_all_service.dtos.request.CityDto;
 import com.project.adm_all_service.dtos.request.UpdateCityDto;
 import com.project.adm_all_service.dtos.response.CityCreateDto;
@@ -11,7 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/citys")
+@RequestMapping("/admin/citys")
 public class CityController {
 
    private final CityService cityService;
@@ -23,7 +24,7 @@ public class CityController {
     //Criação
     @PostMapping
     @PreAuthorize("isAuthenticated() and hasRole('ADMIN_MASTER')") //Proteção do endpoint: Verifica que a o usuário está autenticado e verifica se o usuário tem o perfil de ADMIN_MASTER
-    public ResponseEntity<CityCreateDto> createCity(@RequestBody CityDto dto) {
+    public ResponseEntity<CityCreateDto> createCity(@RequestBody CityCreateRequestDto dto) {
 
        CityCreateDto createDto = cityService.cityCreate(dto); //Chama o service e guarda seu retorno na variavel
 

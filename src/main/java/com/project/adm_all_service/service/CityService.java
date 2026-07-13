@@ -1,6 +1,7 @@
 package com.project.adm_all_service.service;
 
 
+import com.project.adm_all_service.dtos.request.CityCreateRequestDto;
 import com.project.adm_all_service.dtos.request.CityDto;
 import com.project.adm_all_service.dtos.request.UpdateCityDto;
 import com.project.adm_all_service.dtos.response.CityCreateDto;
@@ -8,6 +9,7 @@ import com.project.adm_all_service.exception.BusinessException;
 import com.project.adm_all_service.exception.ResourceNotFoundException;
 import com.project.adm_all_service.model.City;
 import com.project.adm_all_service.repository.CityRepository;
+import com.project.adm_all_service.repository.EnterpriseRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,12 +26,15 @@ public class CityService {
 
     private final CityRepository cityRepository;
 
-    public CityService(CityRepository cityRepository) {
+    private final EnterpriseRepository enterpriseRepository;
+
+    public CityService(CityRepository cityRepository, EnterpriseRepository enterpriseRepository) {
         this.cityRepository = cityRepository;
+        this.enterpriseRepository = enterpriseRepository;
     }
 
     //Criação
-    public CityCreateDto cityCreate (CityDto dto){
+    public CityCreateDto cityCreate (CityCreateRequestDto dto){
 
         Optional<City> cityExists = cityRepository.findByNameAndUf(dto.name(), dto.uf());
 
@@ -87,6 +92,11 @@ public class CityService {
 
         City city = cityRepository.findById(idDelete)
                 .orElseThrow(() -> new ResourceNotFoundException("Cidade não encontra"));
+
+        if (enterpriseRepository.existsByCity(city)) {
+            throw new BusinessException(
+                    "Não é possível excluir uma cidade vinculada a uma empresa.");
+        }
 
         cityRepository.delete(city);
     }
