@@ -6,7 +6,6 @@ import java.time.LocalDate;
 
 public record PeriodResponseDto(
 
-        Long id,
         Integer year,
         Integer month,
         Fortnight fortnight,

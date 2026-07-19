@@ -25,7 +25,6 @@ public class AppointmentPeriodMapper {
     public static PeriodResponseDto toDto (AppointmentPeriod period){
 
         return new PeriodResponseDto(
-                period.getId(),
                 period.getYear(),
                 period.getMonth(),
                 period.getFortnight(),
