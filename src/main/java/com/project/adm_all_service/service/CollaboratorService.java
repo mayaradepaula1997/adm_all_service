@@ -161,7 +161,7 @@ public class CollaboratorService {
         }
 
         //Atualizar empresa
-        if (updateDTO.cityId()!= null){
+        if (updateDTO.enterpriseId()!= null){
 
             //Buscamos a empresa no BD
             Enterprise enterprise = enterpriseRepository.findById(updateDTO.cityId())

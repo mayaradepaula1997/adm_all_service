@@ -8,7 +8,10 @@ import java.util.List;
 
 public record NoteIndicatorRequestDto(
 
+        @NotNull(message = "A cidade é obrigatória")
         Long cityId,
+
+        @NotNull(message = "A empresa é obrigatória")
         Long enterpriseId,
 
         @NotNull(message = "A data do apontamento é obrigatória.")
