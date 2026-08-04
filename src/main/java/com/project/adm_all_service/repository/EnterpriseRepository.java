@@ -7,10 +7,10 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Optional;
 
-public interface EnterpriseRepository  extends JpaRepository<Enterprise, Long> , JpaSpecificationExecutor<Enterprise> {
+public interface EnterpriseRepository extends JpaRepository<Enterprise, Long>, JpaSpecificationExecutor<Enterprise> {
 
-    //Buscar a empresa pelo cnpj
-    Optional<Enterprise> findByCnpj(String cnpj);
+    // Buscar empresa pelo documento (CPF ou CNPJ)
+    Optional<Enterprise> findByDocumento(String documento);
 
-    boolean existsByCity (City city);
+    boolean existsByCity(City city);
 }

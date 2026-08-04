@@ -4,10 +4,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record EnterpriseDto(Long id,
-                            @NotBlank(message = "O nome da empresa é obrigatiório")
+                            @NotBlank(message = "O nome da empresa é obrigatório")
                             String name,
-                            @NotBlank(message = "O campo CNPJ é obrigatório")
-                            String cnpj,
-                            @NotNull(message = "Informe o id da empresa")
+                            @NotBlank(message = "O campo Documento (CPF/CNPJ) é obrigatório")
+                            String documento,
+                            @NotNull(message = "Informe o id da cidade")
                             Long cityId) {
 }

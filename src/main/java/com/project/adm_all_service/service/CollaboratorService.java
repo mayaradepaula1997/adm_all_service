@@ -22,168 +22,181 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class CollaboratorService {
 
     private final CollaboratorRepository collaboratorRepository;
-
     private final CityRepository cityRepository;
-
     private final EnterpriseRepository enterpriseRepository;
-
     private final CollaboratorMapper collaboratorMapper;
 
-    //Construtor
-    public CollaboratorService(CollaboratorRepository collaboratorRepository, CityRepository cityRepository, EnterpriseRepository enterpriseRepository, CollaboratorMapper collaboratorMapper) {
+    public CollaboratorService(CollaboratorRepository collaboratorRepository,
+                               CityRepository cityRepository,
+                               EnterpriseRepository enterpriseRepository,
+                               CollaboratorMapper collaboratorMapper) {
         this.collaboratorRepository = collaboratorRepository;
         this.cityRepository = cityRepository;
         this.enterpriseRepository = enterpriseRepository;
         this.collaboratorMapper = collaboratorMapper;
     }
 
-    //VALIDAÇÃO DA IDADE
-    private void validateAge(LocalDate birthDate){
-
-        int age = Period.between(         //Fazer a comparação da data atual e a data enviada para o usuário
-                birthDate,
-                LocalDate.now()
-        ).getYears();
-
-        if (age < 18){
+    // VALIDAÇÃO DA IDADE
+    private void validateAge(LocalDate birthDate) {
+        int age = Period.between(birthDate, LocalDate.now()).getYears();
+        if (age < 18) {
             throw new BusinessException("O colaborador deve possuir pelo menos 18 anos");
         }
     }
 
-
-    //VALIDAÇÃO DO CPF UNICO
-    private void validateCpf(String cpf){
-
-        if (collaboratorRepository.existsByCpf(cpf)){
+    // VALIDAÇÃO DO CPF ÚNICO
+    private void validateCpf(String cpf) {
+        if (collaboratorRepository.existsByCpf(cpf)) {
             throw new BusinessException("Já existe um colaborador com esse CPF");
         }
     }
 
-    public CollaboratorResponseDTO create (CollaboratorRequestDTO dto){
+    @Transactional
+    public CollaboratorResponseDTO create(CollaboratorRequestDTO dto) {
 
         validateCpf(dto.cpf());
         validateAge(dto.dateOfBirth());
 
-        //Verificar se a empresa já existe
-        Enterprise enterprise = enterpriseRepository.findById(dto.enterpriseId())
-                .orElseThrow(()-> new ResourceNotFoundException("Empresa não encontrada"));
-
-        //Verificando de a cidade existe
+        // Verificar se a cidade existe
         City city = cityRepository.findById(dto.cityId())
-                .orElseThrow(()-> new ResourceNotFoundException("Cidade não encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cidade não encontrada"));
 
+        // Buscar e validar todas as empresas informadas
+        Set<Enterprise> enterprises = new HashSet<>();
+        for (Long enterpriseId : dto.enterpriseIds()) {
+            Enterprise enterprise = enterpriseRepository.findById(enterpriseId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Empresa não encontrada: " + enterpriseId));
+            enterprises.add(enterprise);
+        }
 
         Collaborator collaborator = new Collaborator();
-
         collaborator.setName(dto.name());
         collaborator.setCpf(dto.cpf());
         collaborator.setRg(dto.rg());
         collaborator.setDate_of_birth(dto.dateOfBirth());
-        collaborator.setAddress(dto.address());
+        collaborator.setAddress1(dto.address1());
+        collaborator.setAddress2(dto.address2());
         collaborator.setPix(dto.pix());
-        collaborator.setEnterprise(enterprise);
+        collaborator.setFatherName(dto.fatherName());
+        collaborator.setFatherCpf(dto.fatherCpf());
+        collaborator.setMotherName(dto.motherName());
+        collaborator.setMotherCpf(dto.motherCpf());
+        collaborator.setTransportMode(dto.transportMode());
+        collaborator.setEnterprises(enterprises);
         collaborator.setCity(city);
 
         Collaborator saved = collaboratorRepository.save(collaborator);
-
-        //Utilizando o Mapper para converter que entidade para dto
-        return collaboratorMapper.toResponse(collaborator);
+        return collaboratorMapper.toResponse(saved);
     }
 
-    //Listar todos os colaboradores por paginação
-    public Page<CollaboratorResponseDTO> listAll(int page, int size){
-
+    // Listar todos os colaboradores por paginação
+    public Page<CollaboratorResponseDTO> listAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        return collaboratorRepository.findAll(pageable).map(collaboratorMapper::toResponse);
+    }
 
-        return collaboratorRepository.findAll(pageable)
+    // Listar colaboradores por empresa
+    public Page<CollaboratorResponseDTO> listByEnterprise(Long enterpriseId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        return collaboratorRepository.findByEnterprises_Id(enterpriseId, pageable)
                 .map(collaboratorMapper::toResponse);
     }
 
-    //Listar colaborador por id
-    public CollaboratorResponseDTO findById(Long id){
+    // Listar colaboradores por cidade
+    public Page<CollaboratorResponseDTO> listByCity(Long cityId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        return collaboratorRepository.findByCity_Id(cityId, pageable)
+                .map(collaboratorMapper::toResponse);
+    }
 
-        //Buscamos o colaborador no BD para verificar se ele existe
+    // Listar colaboradores por empresa e cidade
+    public Page<CollaboratorResponseDTO> listByEnterpriseAndCity(Long enterpriseId, Long cityId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        return collaboratorRepository.findByEnterprises_IdAndCity_Id(enterpriseId, cityId, pageable)
+                .map(collaboratorMapper::toResponse);
+    }
+
+    // Listar colaborador por id
+    public CollaboratorResponseDTO findById(Long id) {
         Collaborator collaborator = collaboratorRepository.findById(id)
-                .orElseThrow(()-> new  ResourceNotFoundException("Colaborador não localizado"));
-
-        //Conversão de entidade para DTO
+                .orElseThrow(() -> new ResourceNotFoundException("Colaborador não localizado"));
         return collaboratorMapper.toResponse(collaborator);
     }
 
-    //Deletar um colaborador
-    public void deleteCollaborator (Long id){
-
-        //Verificar se esse colaborador existe no BD
+    // Deletar um colaborador
+    public void deleteCollaborator(Long id) {
         Collaborator collaborator = collaboratorRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Colaborador não localizado"));
-
-        //Deleta esse colaborador do DB
+                .orElseThrow(() -> new ResourceNotFoundException("Colaborador não localizado"));
         collaboratorRepository.delete(collaborator);
     }
 
-    //Atualizar o colaborador
+    // Atualizar o colaborador
     @Transactional
-    public CollaboratorResponseDTO updateCollaborator(Long id, CollaboratorUpdateDTO updateDTO){
+    public CollaboratorResponseDTO updateCollaborator(Long id, CollaboratorUpdateDTO updateDTO) {
 
-        //Buscamos o colaborador do BD
         Collaborator collaborator = collaboratorRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Colaborador não localizado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Colaborador não localizado"));
 
-        //Atualizar nome
-        if (updateDTO.name() != null && !updateDTO.name().isBlank()){
+        if (updateDTO.name() != null && !updateDTO.name().isBlank()) {
             collaborator.setName(updateDTO.name());
         }
-
-        //Atualizar RG
-        if (updateDTO.rg()!= null && !updateDTO.rg().isBlank()){
+        if (updateDTO.rg() != null && !updateDTO.rg().isBlank()) {
             collaborator.setRg(updateDTO.rg());
         }
-
-        //Atualizar aniversario
-        if (updateDTO.dateOfBirth()!= null){
-
-            validateAge(updateDTO.dateOfBirth()); //validação da data de aniversario
+        if (updateDTO.dateOfBirth() != null) {
+            validateAge(updateDTO.dateOfBirth());
             collaborator.setDate_of_birth(updateDTO.dateOfBirth());
         }
-        //Atualizar endereço
-        if (updateDTO.address()!= null && !updateDTO.address().isBlank()){
-            collaborator.setAddress(updateDTO.address());
+        if (updateDTO.address1() != null && !updateDTO.address1().isBlank()) {
+            collaborator.setAddress1(updateDTO.address1());
         }
-
-        //Atualizar pix
-        if (updateDTO.pix()!= null && !updateDTO.pix().isBlank()){
+        if (updateDTO.address2() != null && !updateDTO.address2().isBlank()) {
+            collaborator.setAddress2(updateDTO.address2());
+        }
+        if (updateDTO.pix() != null && !updateDTO.pix().isBlank()) {
             collaborator.setPix(updateDTO.pix());
         }
-
-        //Atualizar empresa
-        if (updateDTO.enterpriseId()!= null){
-
-            //Buscamos a empresa no BD
-            Enterprise enterprise = enterpriseRepository.findById(updateDTO.cityId())
-                    .orElseThrow(()-> new ResourceNotFoundException("Empresa não localizada"));
-
-            collaborator.setEnterprise(enterprise);
+        if (updateDTO.fatherName() != null && !updateDTO.fatherName().isBlank()) {
+            collaborator.setFatherName(updateDTO.fatherName());
         }
-
-        //Atualizar a cidade
-        if (updateDTO.cityId() != null){
-
-            //Buscamos a cidade no BD
+        if (updateDTO.fatherCpf() != null) {
+            collaborator.setFatherCpf(updateDTO.fatherCpf());
+        }
+        if (updateDTO.motherName() != null && !updateDTO.motherName().isBlank()) {
+            collaborator.setMotherName(updateDTO.motherName());
+        }
+        if (updateDTO.motherCpf() != null) {
+            collaborator.setMotherCpf(updateDTO.motherCpf());
+        }
+        // transportMode pode ser null para remover
+        if (updateDTO.transportMode() != null) {
+            collaborator.setTransportMode(updateDTO.transportMode());
+        }
+        // Atualizar empresas se informado
+        if (updateDTO.enterpriseIds() != null && !updateDTO.enterpriseIds().isEmpty()) {
+            Set<Enterprise> enterprises = new HashSet<>();
+            for (Long enterpriseId : updateDTO.enterpriseIds()) {
+                Enterprise enterprise = enterpriseRepository.findById(enterpriseId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Empresa não localizada: " + enterpriseId));
+                enterprises.add(enterprise);
+            }
+            collaborator.setEnterprises(enterprises);
+        }
+        // Atualizar a cidade
+        if (updateDTO.cityId() != null) {
             City city = cityRepository.findById(updateDTO.cityId())
-                    .orElseThrow(()-> new ResourceNotFoundException("Cidade não localizada"));
-
+                    .orElseThrow(() -> new ResourceNotFoundException("Cidade não localizada"));
             collaborator.setCity(city);
-
         }
-        //Salva todas as alterações no BD
-        Collaborator collaboratorUpdate = collaboratorRepository.save(collaborator);
 
-        //Retorna do método, que vai transforma uma entidade em um DTO
-        return collaboratorMapper.toResponse(collaboratorUpdate);
+        Collaborator updated = collaboratorRepository.save(collaborator);
+        return collaboratorMapper.toResponse(updated);
     }
 }

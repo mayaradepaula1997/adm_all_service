@@ -8,7 +8,9 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "tb_enterprise")
@@ -21,26 +23,28 @@ public class Enterprise {
     @NotBlank(message = "O nome é obrigatório")
     private String name;
 
-    @NotBlank(message = "cnpj é obrigatório")
-    private String cnpj;
+    // Aceita CPF ou CNPJ
+    @NotBlank(message = "Documento (CPF ou CNPJ) é obrigatório")
+    @Column(name = "documento", unique = true)
+    private String documento;
 
-    @CreationTimestamp //Preenche automaticamente a data e hora de criação
+    @CreationTimestamp
     @Column(name = "creation_date", updatable = false)
     private LocalDateTime creation;
 
-    //RELACIONAMENTO
+    // RELACIONAMENTO
     @NotNull(message = "o campo cidade é obrigatorio")
-    @ManyToOne(fetch = FetchType.LAZY)         //Só busca a cidade quando precisar
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id")
     private City city;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "enterprise", cascade = CascadeType.ALL)
-    private List<Collaborator> collaborators = new ArrayList<>();
+    @ManyToMany(mappedBy = "enterprises")
+    private Set<Collaborator> collaborators = new HashSet<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "enterprise", cascade = CascadeType.ALL)
-    private List<User> users = new ArrayList<>();
+    @ManyToMany(mappedBy = "enterprises")
+    private Set<User> users = new HashSet<>();
 
     @OneToMany(mappedBy = "enterprise", cascade = CascadeType.ALL)
     private List<NoteIndicator> noteIndicators = new ArrayList<>();
@@ -48,10 +52,10 @@ public class Enterprise {
     public Enterprise() {
     }
 
-    public Enterprise(Long id, String name, String cnpj, LocalDateTime creation, City city) {
+    public Enterprise(Long id, String name, String documento, LocalDateTime creation, City city) {
         this.id = id;
         this.name = name;
-        this.cnpj = cnpj;
+        this.documento = documento;
         this.creation = creation;
         this.city = city;
     }
@@ -68,12 +72,12 @@ public class Enterprise {
         this.name = name;
     }
 
-    public String getCnpj() {
-        return cnpj;
+    public String getDocumento() {
+        return documento;
     }
 
-    public void setCnpj(String cnpj) {
-        this.cnpj = cnpj;
+    public void setDocumento(String documento) {
+        this.documento = documento;
     }
 
     public LocalDateTime getCreation() {
@@ -92,19 +96,19 @@ public class Enterprise {
         this.city = city;
     }
 
-    public List<Collaborator> getCollaborators() {
+    public Set<Collaborator> getCollaborators() {
         return collaborators;
     }
 
-    public void setCollaborators(List<Collaborator> collaborators) {
+    public void setCollaborators(Set<Collaborator> collaborators) {
         this.collaborators = collaborators;
     }
 
-    public List<User> getUsers() {
+    public Set<User> getUsers() {
         return users;
     }
 
-    public void setUsers(List<User> users) {
+    public void setUsers(Set<User> users) {
         this.users = users;
     }
 

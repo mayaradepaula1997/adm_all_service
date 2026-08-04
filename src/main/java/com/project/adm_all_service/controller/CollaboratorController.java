@@ -23,46 +23,53 @@ public class CollaboratorController {
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CollaboratorResponseDTO> create(@Valid @RequestBody CollaboratorRequestDTO dto){ // @Valid, ára validar os campor obrigatorios
-
+    public ResponseEntity<CollaboratorResponseDTO> create(@Valid @RequestBody CollaboratorRequestDTO dto) {
         CollaboratorResponseDTO collaborator = collaboratorService.create(dto);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(collaborator);
     }
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<CollaboratorResponseDTO>> listAll(@RequestParam(defaultValue = "0")int page, @RequestParam (defaultValue = "10")int size){
+    public ResponseEntity<Page<CollaboratorResponseDTO>> listAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size,
+            @RequestParam(required = false) Long enterpriseId,
+            @RequestParam(required = false) Long cityId) {
 
-        Page<CollaboratorResponseDTO> collaborator = collaboratorService.listAll(page,size);
+        Page<CollaboratorResponseDTO> collaborators;
 
-        return ResponseEntity.ok(collaborator);
+        if (enterpriseId != null && cityId != null) {
+            collaborators = collaboratorService.listByEnterpriseAndCity(enterpriseId, cityId, page, size);
+        } else if (enterpriseId != null) {
+            collaborators = collaboratorService.listByEnterprise(enterpriseId, page, size);
+        } else if (cityId != null) {
+            collaborators = collaboratorService.listByCity(cityId, page, size);
+        } else {
+            collaborators = collaboratorService.listAll(page, size);
+        }
 
+        return ResponseEntity.ok(collaborators);
     }
 
     @GetMapping(value = "/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CollaboratorResponseDTO> findById(@PathVariable Long id){
-
-         CollaboratorResponseDTO collaborator = collaboratorService.findById(id);
-
-         return ResponseEntity.ok(collaborator);
+    public ResponseEntity<CollaboratorResponseDTO> findById(@PathVariable Long id) {
+        CollaboratorResponseDTO collaborator = collaboratorService.findById(id);
+        return ResponseEntity.ok(collaborator);
     }
 
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> delete(@PathVariable Long id){
-
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         collaboratorService.deleteCollaborator(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping(value = "/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CollaboratorResponseDTO> update(@PathVariable Long id, @Valid @RequestBody CollaboratorUpdateDTO updateDTO){
-
-        CollaboratorResponseDTO collaboratorUpdate =  collaboratorService.updateCollaborator(id, updateDTO);
-
+    public ResponseEntity<CollaboratorResponseDTO> update(@PathVariable Long id,
+                                                          @Valid @RequestBody CollaboratorUpdateDTO updateDTO) {
+        CollaboratorResponseDTO collaboratorUpdate = collaboratorService.updateCollaborator(id, updateDTO);
         return ResponseEntity.ok(collaboratorUpdate);
     }
 }

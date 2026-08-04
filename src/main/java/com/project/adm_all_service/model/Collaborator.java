@@ -1,12 +1,15 @@
 package com.project.adm_all_service.model;
 
+import com.project.adm_all_service.enums.TransportMode;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -20,7 +23,7 @@ public class Collaborator {
     @Column(name = "name")
     private String name;
 
-    @Column(unique = true, nullable = false) //Anotação para sinalizar que esse é uma campo unico e não pode ser null
+    @Column(unique = true, nullable = false)
     private String cpf;
 
     @Column(nullable = false)
@@ -29,42 +32,56 @@ public class Collaborator {
     @Column(name = "birth_date", nullable = false)
     private LocalDate date_of_birth;
 
-    @Column(nullable = false)
-    private String address;
+    @Column(name = "address1", nullable = false, columnDefinition = "varchar(255) default 'Não informado'")
+    private String address1;
+
+    @Column(name = "address2", nullable = false, columnDefinition = "varchar(255) default 'Não informado'")
+    private String address2;
 
     @Column(nullable = false)
     private String pix;
 
-    @CreationTimestamp   //Preencher automaticamente a data e a hora da criação do registro
-    @Column(name = "creation_date", updatable = false)
-    private LocalDateTime creation; //Data de criação
+    // Filiação - obrigatórios
+    @Column(name = "father_name", nullable = false)
+    private String fatherName;
 
-    //RELACIONAMENTOS
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "enterprise_id")
-    private Enterprise enterprise;
+    @Column(name = "father_cpf")
+    private String fatherCpf;
+
+    @Column(name = "mother_name", nullable = false)
+    private String motherName;
+
+    @Column(name = "mother_cpf")
+    private String motherCpf;
+
+    // Meio de transporte - opcional
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transport_mode")
+    private TransportMode transportMode;
+
+    @CreationTimestamp
+    @Column(name = "creation_date", updatable = false)
+    private LocalDateTime creation;
+
+    // RELACIONAMENTOS
+    // Multi-empresa: ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "tb_collaborator_enterprise",
+            joinColumns = @JoinColumn(name = "collaborator_id"),
+            inverseJoinColumns = @JoinColumn(name = "enterprise_id")
+    )
+    private Set<Enterprise> enterprises = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id")
     private City city;
 
     @OneToMany(mappedBy = "collaborator", cascade = CascadeType.ALL)
-    private List<LaunchAppointment>launchAppointments = new ArrayList<>();
+    private List<LaunchAppointment> launchAppointments = new ArrayList<>();
 
-    //CONSTRUTOR
+    // CONSTRUTOR
     public Collaborator() {
-    }
-
-    public Collaborator(String name, String cpf, String rg, LocalDate date_of_birth, String address, String pix, LocalDateTime creation, Enterprise enterprise, City city) {
-        this.name = name;
-        this.cpf = cpf;
-        this.rg = rg;
-        this.date_of_birth = date_of_birth;
-        this.address = address;
-        this.pix = pix;
-        this.creation = creation;
-        this.enterprise = enterprise;
-        this.city = city;
     }
 
     public Long getId() {
@@ -95,12 +112,20 @@ public class Collaborator {
         this.rg = rg;
     }
 
-    public String getAddress() {
-        return address;
+    public String getAddress1() {
+        return address1;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setAddress1(String address1) {
+        this.address1 = address1;
+    }
+
+    public String getAddress2() {
+        return address2;
+    }
+
+    public void setAddress2(String address2) {
+        this.address2 = address2;
     }
 
     public LocalDate getDate_of_birth() {
@@ -119,6 +144,46 @@ public class Collaborator {
         this.pix = pix;
     }
 
+    public String getFatherName() {
+        return fatherName;
+    }
+
+    public void setFatherName(String fatherName) {
+        this.fatherName = fatherName;
+    }
+
+    public String getFatherCpf() {
+        return fatherCpf;
+    }
+
+    public void setFatherCpf(String fatherCpf) {
+        this.fatherCpf = fatherCpf;
+    }
+
+    public String getMotherName() {
+        return motherName;
+    }
+
+    public void setMotherName(String motherName) {
+        this.motherName = motherName;
+    }
+
+    public String getMotherCpf() {
+        return motherCpf;
+    }
+
+    public void setMotherCpf(String motherCpf) {
+        this.motherCpf = motherCpf;
+    }
+
+    public TransportMode getTransportMode() {
+        return transportMode;
+    }
+
+    public void setTransportMode(TransportMode transportMode) {
+        this.transportMode = transportMode;
+    }
+
     public LocalDateTime getCreation() {
         return creation;
     }
@@ -127,12 +192,12 @@ public class Collaborator {
         this.creation = creation;
     }
 
-    public Enterprise getEnterprise() {
-        return enterprise;
+    public Set<Enterprise> getEnterprises() {
+        return enterprises;
     }
 
-    public void setEnterprise(Enterprise enterprise) {
-        this.enterprise = enterprise;
+    public void setEnterprises(Set<Enterprise> enterprises) {
+        this.enterprises = enterprises;
     }
 
     public City getCity() {
@@ -143,4 +208,11 @@ public class Collaborator {
         this.city = city;
     }
 
+    public List<LaunchAppointment> getLaunchAppointments() {
+        return launchAppointments;
+    }
+
+    public void setLaunchAppointments(List<LaunchAppointment> launchAppointments) {
+        this.launchAppointments = launchAppointments;
+    }
 }
