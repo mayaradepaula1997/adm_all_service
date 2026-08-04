@@ -32,7 +32,8 @@ public class LaunchAppointmentMapper {
                 launchAppointment.getCollaborator().getId(),
                 launchAppointment.getStatusLaunch(),
                 launchAppointment.getOvertime(),
-                launchAppointment.getObservation()
+                launchAppointment.getObservation(),
+                launchAppointment.getDailyValue()
         );
     }
 }

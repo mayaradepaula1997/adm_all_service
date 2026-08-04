@@ -10,6 +10,7 @@ public record LaunchAppointmentResponseDto(
         Long collaboratorId,
         StatusLaunch statusLaunch,
         BigDecimal overtime,
-        String observation
+        String observation,
+        BigDecimal dailyValue
 ) {
 }

@@ -30,6 +30,9 @@ public class LaunchAppointment {
 
     private String observation;
 
+    @Column(name = "daily_value")
+    private BigDecimal dailyValue; // Valor da diária definido pelo gestor para este dia específico
+
     //Construtor
     public LaunchAppointment() {
     }
@@ -85,4 +88,13 @@ public class LaunchAppointment {
     public void setObservation(String observation) {
         this.observation = observation;
     }
+
+    public BigDecimal getDailyValue() {
+        return dailyValue;
+    }
+
+    public void setDailyValue(BigDecimal dailyValue) {
+        this.dailyValue = dailyValue;
+    }
 }
+
