@@ -9,7 +9,7 @@ public record UserCreateDto(String name,
                             String password,
                             Set<Role> roleSet,
                             Long cityId,
-                            Long enterpriseId) {
+                            Set<Long> enterpriseIds) {
 
 
 }

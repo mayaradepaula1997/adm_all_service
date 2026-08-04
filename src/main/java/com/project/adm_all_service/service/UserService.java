@@ -3,6 +3,11 @@ package com.project.adm_all_service.service;
 import com.project.adm_all_service.dtos.request.UserCreateDto;
 import com.project.adm_all_service.dtos.request.UserUpdateDto;
 import com.project.adm_all_service.dtos.response.UserResponseDto;
+import com.project.adm_all_service.dtos.response.EnterpriseSimpleDto;
+import java.util.stream.Collectors;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import com.project.adm_all_service.enums.Role;
 import com.project.adm_all_service.exception.BusinessException;
 import com.project.adm_all_service.exception.ResourceNotFoundException;
@@ -49,12 +54,17 @@ public class UserService {
 
 
         //Verificar se a cidade já existe
-        City city =  cityRepository.findById(dto.cityId())
-                .orElseThrow(()-> new ResourceNotFoundException("Cidade não encontrada"));
+        City city = null;
+        if (dto.cityId() != null) {
+            city = cityRepository.findById(dto.cityId())
+                    .orElseThrow(()-> new ResourceNotFoundException("Cidade não encontrada"));
+        }
 
-        //Verificar se a empresa já existe
-        Enterprise enterprise = enterpriseRepository.findById(dto.enterpriseId())
-                .orElseThrow(()-> new ResourceNotFoundException("Empresa não encontrada"));
+        //Verificar se as empresas já existem
+        Set<Enterprise> enterprises = new HashSet<>();
+        if (dto.enterpriseIds() != null && !dto.enterpriseIds().isEmpty()) {
+            enterprises.addAll(enterpriseRepository.findAllById(dto.enterpriseIds()));
+        }
 
         //Instância a classe usuário
         User user = new User();
@@ -63,19 +73,12 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(dto.password()));
         user.setRoles(dto.roleSet());
         user.setCity(city);
-        user.setEnterprise(enterprise);
+        user.setEnterprises(enterprises);
 
         //Salva no banco de dados
         User usersaved = userRepository.save(user);
 
-        return new UserResponseDto(
-                usersaved.getId(),
-                usersaved.getName(),
-                usersaved.getEmail(),
-                usersaved.getRoles(),
-                usersaved.getCity().getName(),
-                usersaved.getEnterprise().getName()
-        );
+        return toUserResponseDto(usersaved);
 
     }
 
@@ -85,14 +88,7 @@ public class UserService {
         Pageable pageable= PageRequest.of(page, size, Sort.by("name").ascending());
 
         return userRepository.findAll(pageable)
-                .map(user -> new UserResponseDto(
-                        user.getId(),
-                        user.getName(),
-                        user.getEmail(),
-                        user.getRoles(),
-                        user.getCity().getName(),
-                        user.getEnterprise().getName()
-                ));
+                .map(this::toUserResponseDto);
     }
 
     //Listar usuário pelo id
@@ -102,14 +98,7 @@ public class UserService {
         User user = userRepository.findById(id).
                 orElseThrow(()-> new ResourceNotFoundException("Usuário não encontrado"));
 
-        return new UserResponseDto(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getRoles(),
-                user.getCity().getName(),
-                user.getEnterprise().getName()
-        );
+        return toUserResponseDto(user);
     }
 
     //Deletar o usuário
@@ -175,24 +164,36 @@ public class UserService {
         }
 
         //Atualizar a empresa
-        if(updateDto.enterpriseId() != null){
+        if(updateDto.enterpriseIds() != null){
+            Set<Enterprise> enterprises = new HashSet<>(enterpriseRepository.findAllById(updateDto.enterpriseIds()));
+            user.setEnterprises(enterprises);
+        }
 
-            Enterprise enterprise = enterpriseRepository.findById(updateDto.enterpriseId())
-                    .orElseThrow(()-> new BusinessException("Empresa não encontrada"));
-
-            user.setEnterprise(enterprise);
+        // Clear city and enterprise if the user is not restricted to a location
+        if (user.getRoles().contains(Role.RH) || user.getRoles().contains(Role.ADMIN_MASTER)) {
+            user.setCity(null);
+            user.setEnterprises(new HashSet<>());
         }
 
        //Salva os dados atualizados no banco de dados
         User userUpdate = userRepository.save(user);
 
+        return toUserResponseDto(userUpdate);
+    }
+
+    private UserResponseDto toUserResponseDto(User user) {
+        List<EnterpriseSimpleDto> entDtos = user.getEnterprises().stream()
+                .map(e -> new EnterpriseSimpleDto(e.getId(), e.getName(), e.getDocumento()))
+                .collect(Collectors.toList());
+
         return new UserResponseDto(
-                userUpdate.getId(),
-                userUpdate.getName(),
-                userUpdate.getEmail(),
-                userUpdate.getRoles(),
-                userUpdate.getCity().getName(),
-                userUpdate.getEnterprise().getName()
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRoles(),
+                user.getCity() != null ? user.getCity().getId() : null,
+                user.getCity() != null ? user.getCity().getName() : null,
+                entDtos
         );
     }
 }

@@ -9,5 +9,5 @@ public record UserUpdateDto(String name,
                             String password,
                             Set<Role> roles,
                             Long cityId,
-                            Long enterpriseId) {
+                            Set<Long> enterpriseIds) {
 }

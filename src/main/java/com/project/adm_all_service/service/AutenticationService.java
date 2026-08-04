@@ -9,6 +9,7 @@ import com.project.adm_all_service.enums.Role;
 import com.project.adm_all_service.exception.BusinessException;
 import com.project.adm_all_service.model.User;
 import com.project.adm_all_service.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +21,12 @@ import java.time.ZoneOffset;
 
 @Service
 public class AutenticationService implements UserDetailsService {
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${jwt.expiration.hours:8}")
+    private int jwtExpirationHours;
 
     private UserRepository userRepository;
 
@@ -42,8 +49,7 @@ public class AutenticationService implements UserDetailsService {
     public String gerarTokenJwt(User user){
 
         try{
-            //Cria a assinatura "Secret":É uma parte unica do nosso token, para incrementar - DEFINIR NA APLICAÇÃO
-            Algorithm algorithm = Algorithm.HMAC256("my-secret"); //Garante que apenas seu servidor consiga gerar e validar o token
+            Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
 
             //Configurações para gerar o token
             String token = JWT.create()
@@ -82,7 +88,7 @@ public class AutenticationService implements UserDetailsService {
     public String validarTokenJwt (String token){  //Esse método retorna o login do usuario
 
         try {
-            Algorithm algorithm = Algorithm.HMAC256("my-secret");
+            Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
 
             return JWT.require(algorithm)
                     .withIssuer("adm_all_service")
@@ -97,12 +103,11 @@ public class AutenticationService implements UserDetailsService {
     }
 
 
-    //Método que gera o tempo de inspiração do token
+    //Método que gera o tempo de expiração do token
     private Instant gerarDataExpiracao() {
-
-        return LocalDateTime.now()   //Chama a hora atual
-                .plusHours(8)        //Adiciona mais 8 horas
-                .toInstant(ZoneOffset.of("-03:00"));  //Converte o time zone
+        return LocalDateTime.now()
+                .plusHours(jwtExpirationHours)
+                .toInstant(ZoneOffset.of("-03:00"));
     }
 }
 

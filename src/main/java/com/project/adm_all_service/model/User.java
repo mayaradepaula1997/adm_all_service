@@ -39,15 +39,17 @@ public class User implements UserDetails {
     private Set<Role> roles = new HashSet<>();
 
     //RELACIONAMENTOS
-    @NotNull(message = "O campo cidade é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id") // FK no banco
     private City city;            //Varios usuários estão relacionados a uma cidade
 
-    @NotNull(message = "O campo empresa é obrigatório")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "enterprise_id")
-    private Enterprise enterprise;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_enterprises",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "enterprise_id")
+    )
+    private Set<Enterprise> enterprises = new HashSet<>();
 
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL )
     private List<NoteIndicator> noteIndicators = new ArrayList<>();
@@ -57,13 +59,13 @@ public class User implements UserDetails {
     }
 
     //Construtor com argumentos
-    public User(String name, String email, Set<Role> roles, String password, City city, Enterprise enterprise) {
+    public User(String name, String email, Set<Role> roles, String password, City city, Set<Enterprise> enterprises) {
         this.name = name;
         this.email = email;
         this.roles = roles;
         this.password = password;
         this.city = city;
-        this.enterprise = enterprise;
+        this.enterprises = enterprises;
     }
 
     //Getter and Setter
@@ -107,12 +109,12 @@ public class User implements UserDetails {
         this.city = city;
     }
 
-    public Enterprise getEnterprise() {
-        return enterprise;
+    public Set<Enterprise> getEnterprises() {
+        return enterprises;
     }
 
-    public void setEnterprise(Enterprise enterprise) {
-        this.enterprise = enterprise;
+    public void setEnterprises(Set<Enterprise> enterprises) {
+        this.enterprises = enterprises;
     }
 
     public List<NoteIndicator> getNoteIndicators() {

@@ -70,6 +70,8 @@ public class SecurityConfiguration {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/authentication").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/admin/users/me").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/admin/cities", "/admin/enterprises").authenticated()
                        .requestMatchers("/admin/**").hasRole("ADMIN_MASTER")
                         //.requestMatchers("/rh/**").hasAnyRole("ADMIN_MASTER", "RH")
                        // .requestMatchers("/gestor/**").hasAnyRole("ADMIN_MASTER", "GESTOR")
