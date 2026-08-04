@@ -117,6 +117,14 @@ public class NoteIndicatorService {
                 .map(noteIndicator -> NoteIndicatorMapper.toDto(noteIndicator));
 
     }
+    
+    // Filtrar apontamentos por empresa, cidade e datas
+    public java.util.List<NoteIndicatorResponseDto> filter(Long enterpriseId, Long cityId, LocalDate start, LocalDate end) {
+        return noteIndicatorRepository.findByEnterprise_IdAndCity_IdAndAppointmentDateBetween(enterpriseId, cityId, start, end)
+                .stream()
+                .map(NoteIndicatorMapper::toDto)
+                .collect(Collectors.toList());
+    }
 
     //Buscar por id
     public NoteIndicatorResponseDto findById(Long id) {

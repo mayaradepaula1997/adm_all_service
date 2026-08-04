@@ -7,11 +7,15 @@ import com.project.adm_all_service.model.User;
 import com.project.adm_all_service.service.NoteIndicatorService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/apontador/note-indicators")
@@ -35,11 +39,22 @@ public class NoteIndicatorController {
 
     @GetMapping
     public ResponseEntity <Page<NoteIndicatorResponseDto>> findAll(@RequestParam (defaultValue = "0") int page,
-                                                            @RequestParam (defaultValue = "10") int size){
+                                                            @RequestParam (defaultValue = "50") int size){
 
         Page<NoteIndicatorResponseDto> noteIndicatorResponseDtos = noteIndicatorService.findAll(page, size);
 
         return ResponseEntity.ok(noteIndicatorResponseDtos);
+    }
+    
+    @GetMapping("/filter")
+    public ResponseEntity<List<NoteIndicatorResponseDto>> filter(
+            @RequestParam Long enterpriseId,
+            @RequestParam Long cityId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            
+        List<NoteIndicatorResponseDto> response = noteIndicatorService.filter(enterpriseId, cityId, startDate, endDate);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(value = "/{id}")
@@ -67,8 +82,4 @@ public class NoteIndicatorController {
         return ResponseEntity.ok(responseDto);
 
     }
-
-
-
 }
-
