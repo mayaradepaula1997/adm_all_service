@@ -43,6 +43,11 @@ public class User implements UserDetails {
     @JoinColumn(name = "city_id") // FK no banco
     private City city;            //Varios usuários estão relacionados a uma cidade
 
+    // Admin que criou este usuário — null para ADMIN_MASTER e SUPER_ADMIN
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_owner_id", nullable = true)
+    private User adminOwner;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_enterprises",
@@ -123,6 +128,14 @@ public class User implements UserDetails {
 
     public void setNoteIndicators(List<NoteIndicator> noteIndicators) {
         this.noteIndicators = noteIndicators;
+    }
+
+    public User getAdminOwner() {
+        return adminOwner;
+    }
+
+    public void setAdminOwner(User adminOwner) {
+        this.adminOwner = adminOwner;
     }
 
     //Quais roles o usuário possui - Coleção de permissoes

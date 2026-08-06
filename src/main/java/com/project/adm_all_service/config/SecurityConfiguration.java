@@ -35,13 +35,14 @@ public class SecurityConfiguration {
     //Método responsavel pela hierarquia de permissões, o que cada perfil pode acessar (herança de perfil)
     @Bean
     public RoleHierarchy roleHierarchy() {  //Cria e retorna a hierarquia de permissoes (herança de roles)
-        return RoleHierarchyImpl.fromHierarchy("""                    
-                            
-                        ROLE_ADMIN_MASTER > ROLE_RH
-                        ROLE_ADMIN_MASTER > ROLE_GESTOR
-                        ROLE_ADMIN_MASTER > ROLE_APONTADOR
-                       
-                   """);
+        return RoleHierarchyImpl.fromHierarchy("""
+                    
+                ROLE_SUPER_ADMIN > ROLE_ADMIN_MASTER
+                ROLE_ADMIN_MASTER > ROLE_RH
+                ROLE_ADMIN_MASTER > ROLE_GESTOR
+                ROLE_ADMIN_MASTER > ROLE_APONTADOR
+               
+           """);
 
         // ROLE_RH > ROLE_APONTADOR
         // ROLE_GESTOR > ROLE_APONTADOR
@@ -72,12 +73,10 @@ public class SecurityConfiguration {
                         .requestMatchers("/authentication").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/admin/users/me").authenticated()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/admin/cities", "/admin/enterprises").authenticated()
-                       .requestMatchers("/admin/**").hasRole("ADMIN_MASTER")
-                        //.requestMatchers("/rh/**").hasAnyRole("ADMIN_MASTER", "RH")
-                       // .requestMatchers("/gestor/**").hasAnyRole("ADMIN_MASTER", "GESTOR")
+                        .requestMatchers("/super-admin/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN_MASTER")
                         .requestMatchers("/apontador/**").hasAnyRole("ADMIN_MASTER", "APONTADOR")
-                        .anyRequest().authenticated()  //Qualquer outra rota precisa estar autenticada
-
+                        .anyRequest().authenticated()
                 )
 
 

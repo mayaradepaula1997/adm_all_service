@@ -46,12 +46,23 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserResponseDto create (UserCreateDto dto){
+    public UserResponseDto create (UserCreateDto dto, User currentUser){
 
         //Verificamos se o usuário ja existe
         if (userRepository.findByEmail(dto.email()).isPresent()){
-            throw new BusinessException("Usuário já existe");        }
+            throw new BusinessException("Usuário já existe");
+        }
 
+        // ADMIN_MASTER não pode criar outro ADMIN_MASTER
+        if (currentUser.getRoles().contains(Role.ADMIN_MASTER)
+                && dto.roleSet().contains(Role.ADMIN_MASTER)) {
+            throw new BusinessException("Você não tem permissão para criar um ADMIN_MASTER");
+        }
+
+        // Nenhuma rota normal pode criar SUPER_ADMIN
+        if (dto.roleSet().contains(Role.SUPER_ADMIN)) {
+            throw new BusinessException("Não é permitido criar um SUPER_ADMIN por esta rota");
+        }
 
         //Verificar se a cidade já existe
         City city = null;
@@ -75,6 +86,11 @@ public class UserService {
         user.setCity(city);
         user.setEnterprises(enterprises);
 
+        // Define o adminOwner: o ADMIN_MASTER que está criando fica como dono
+        if (currentUser.getRoles().contains(Role.ADMIN_MASTER)) {
+            user.setAdminOwner(currentUser);
+        }
+
         //Salva no banco de dados
         User usersaved = userRepository.save(user);
 
@@ -82,12 +98,12 @@ public class UserService {
 
     }
 
-    //Listar todos os usuários
-    public Page<UserResponseDto> listUser(int page, int size ){
+    //Lista sub-usuários do ADMIN_MASTER autenticado
+    public Page<UserResponseDto> listUser(int page, int size, User currentUser){
 
         Pageable pageable= PageRequest.of(page, size, Sort.by("name").ascending());
 
-        return userRepository.findAll(pageable)
+        return userRepository.findByAdminOwner(currentUser, pageable)
                 .map(this::toUserResponseDto);
     }
 
@@ -102,32 +118,46 @@ public class UserService {
     }
 
     //Deletar o usuário
-    public void deleteUser(Long id){
+    public void deleteUser(Long id, User currentUser){
 
         //Busca o usuário no BD
         User user = userRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Usuário não encontrado"));
+
+        // Nunca permite deletar SUPER_ADMIN
+        if (user.getRoles().contains(Role.SUPER_ADMIN)) {
+            throw new BusinessException("Não é permitido excluir o SUPER_ADMIN");
+        }
+
+        // ADMIN_MASTER só pode deletar seus próprios sub-usuários
+        if (currentUser.getRoles().contains(Role.ADMIN_MASTER)) {
+            if (user.getAdminOwner() == null || !user.getAdminOwner().getId().equals(currentUser.getId())) {
+                throw new BusinessException("Você não tem permissão para excluir este usuário");
+            }
+        }
 
         userRepository.delete(user);
     }
 
     //Atualizar usuário
     @Transactional
-    public UserResponseDto update(Long id, UserUpdateDto updateDto){
-
-        System.out.println("Entrou no update");
-        System.out.println("ID: " + id);
-        System.out.println("Nome: " + updateDto.name());
-        System.out.println("Email: " + updateDto.email());
+    public UserResponseDto update(Long id, UserUpdateDto updateDto, User currentUser){
 
         //Verificar se o usuário existe
         User user = userRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("Usuário não encontrado"));
 
+        // ADMIN_MASTER só pode editar seus próprios sub-usuários
+        if (currentUser.getRoles().contains(Role.ADMIN_MASTER)) {
+            if (user.getAdminOwner() == null || !user.getAdminOwner().getId().equals(currentUser.getId())) {
+                throw new BusinessException("Você não tem permissão para editar este usuário");
+            }
+        }
+
         //Atualizar o nome
         if (updateDto.name() != null && !updateDto.name().isBlank()){
             user.setName(updateDto.name());
         }
-        //Atuslizar o e-mail e verificar se esse email já existe no BD
+        //Atualizar o e-mail e verificar se esse email já existe no BD
         if (updateDto.email() != null && !updateDto.email().isBlank()){
 
             //Verifica se já tem um usuário com esse e-mail
@@ -147,8 +177,8 @@ public class UserService {
         //Atualizar role
         if (updateDto.roles() != null && !updateDto.roles().isEmpty()){
 
-            if (updateDto.roles().contains(Role.ADMIN_MASTER)){
-                throw new BusinessException("Não é permitido definir ADMIN_MASTE");
+            if (updateDto.roles().contains(Role.ADMIN_MASTER) || updateDto.roles().contains(Role.SUPER_ADMIN)){
+                throw new BusinessException("Não é permitido definir esta role via atualização de usuário");
             }
 
             user.setRoles(updateDto.roles());

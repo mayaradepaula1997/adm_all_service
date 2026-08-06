@@ -60,5 +60,23 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println("Senha: admin123");
             System.out.println("===============================================");
         }
+
+        // Cria o SUPER_ADMIN se não existir (independente de outros usuários)
+        if (!userRepository.existsAdminsByRole(Role.SUPER_ADMIN)) {
+            User superAdmin = new User(
+                    "Super Admin",
+                    "superadmin@admallservice.com",
+                    Set.of(Role.SUPER_ADMIN),
+                    passwordEncoder.encode("superadmin123"),
+                    null,
+                    Set.of()
+            );
+            userRepository.save(superAdmin);
+            System.out.println("====== SUPER ADMIN CRIADO COM SUCESSO ======");
+            System.out.println("Email: superadmin@admallservice.com");
+            System.out.println("Senha: superadmin123");
+            System.out.println("ATENÇÃO: Altere a senha após o primeiro login!");
+            System.out.println("============================================");
+        }
     }
 }

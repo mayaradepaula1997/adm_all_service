@@ -24,18 +24,21 @@ public class UserController {
 
     @PostMapping
     @PreAuthorize("isAuthenticated() and hasRole('ADMIN_MASTER')")
-    public ResponseEntity<UserResponseDto> create(@RequestBody UserCreateDto createDto) {
-        UserResponseDto user = userService.create(createDto);
+    public ResponseEntity<UserResponseDto> create(
+            @AuthenticationPrincipal User currentUser,
+            @RequestBody UserCreateDto createDto) {
+        UserResponseDto user = userService.create(createDto, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     @GetMapping
     @PreAuthorize("isAuthenticated() and hasRole('ADMIN_MASTER')")
     public ResponseEntity<Page<UserResponseDto>> listAll(
+            @AuthenticationPrincipal User currentUser,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Page<UserResponseDto> user = userService.listUser(page, size);
-        return ResponseEntity.ok(user);
+        Page<UserResponseDto> users = userService.listUser(page, size, currentUser);
+        return ResponseEntity.ok(users);
     }
 
     // Retorna os dados do usuário atualmente autenticado
@@ -55,15 +58,20 @@ public class UserController {
 
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("isAuthenticated() and hasRole('ADMIN_MASTER')")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    public ResponseEntity<Void> deleteUser(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long id) {
+        userService.deleteUser(id, currentUser);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping(value = "/{id}")
     @PreAuthorize("isAuthenticated() and hasRole('ADMIN_MASTER')")
-    public ResponseEntity<UserResponseDto> update(@PathVariable Long id, @RequestBody UserUpdateDto dto) {
-        UserResponseDto response = userService.update(id, dto);
+    public ResponseEntity<UserResponseDto> update(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long id,
+            @RequestBody UserUpdateDto dto) {
+        UserResponseDto response = userService.update(id, dto, currentUser);
         return ResponseEntity.ok(response);
     }
 }
