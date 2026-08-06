@@ -82,14 +82,23 @@ public class NoteIndicatorService {
             Collaborator collaborator = collaboratorRepository.findById(launchDto.collaboratorId())
                     .orElseThrow(() -> new ResourceNotFoundException("Colaborador não encontrado."));
 
-            // Verifica se o colaborador já possui lançamento para esta data
+            // Verifica se o colaborador já possui lançamento nesta mesma empresa
             if (launchAppointmentRepository
-                    .existsByCollaboratorAndNoteIndicatorAppointmentDate(
+                    .existsByCollaboratorAndNoteIndicatorAppointmentDateAndNoteIndicatorEnterprise(
                             collaborator,
-                            noteIndicatorRequestDto.appointmentDate())) {
+                            noteIndicatorRequestDto.appointmentDate(),
+                            enterprise)) {
 
                 throw new BusinessException(
-                        "O colaborador já possui um apontamento nesta data.");
+                        "O colaborador já possui um apontamento nesta empresa para esta data.");
+            }
+
+            // Verifica se está lançando PRESENÇA e já existe outra PRESENÇA na mesma data em qualquer outra empresa
+            if (launchDto.statusLaunch() == com.project.adm_all_service.enums.StatusLaunch.PRESENCE) {
+                if (launchAppointmentRepository.existsByCollaboratorAndNoteIndicatorAppointmentDateAndStatusLaunch(
+                        collaborator, noteIndicatorRequestDto.appointmentDate(), com.project.adm_all_service.enums.StatusLaunch.PRESENCE)) {
+                    throw new BusinessException("O colaborador já possui um apontamento de presença nesta data em outra empresa.");
+                }
             }
 
             //Instância a classe de lançamento
@@ -169,6 +178,13 @@ public class NoteIndicatorService {
             if (launch == null) {
                 throw new ResourceNotFoundException(
                         "Lançamento não encontrado.");
+            }
+
+            if (launchDto.statusLaunch() == com.project.adm_all_service.enums.StatusLaunch.PRESENCE) {
+                if (launchAppointmentRepository.existsByCollaboratorAndNoteIndicatorAppointmentDateAndStatusLaunchAndIdNot(
+                        launch.getCollaborator(), noteIndicator.getAppointmentDate(), com.project.adm_all_service.enums.StatusLaunch.PRESENCE, launch.getId())) {
+                    throw new BusinessException("O colaborador já possui um apontamento de presença nesta data em outra empresa.");
+                }
             }
 
             launch.setStatusLaunch(launchDto.statusLaunch());

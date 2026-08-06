@@ -22,6 +22,12 @@ public interface LaunchAppointmentRepository extends JpaRepository<LaunchAppoint
 
     boolean existsByCollaboratorAndNoteIndicatorAppointmentDate(Collaborator collaborator, LocalDate appointmentDate);
 
+    boolean existsByCollaboratorAndNoteIndicatorAppointmentDateAndNoteIndicatorEnterprise(Collaborator collaborator, LocalDate appointmentDate, com.project.adm_all_service.model.Enterprise enterprise);
+
+    boolean existsByCollaboratorAndNoteIndicatorAppointmentDateAndStatusLaunch(Collaborator collaborator, LocalDate appointmentDate, com.project.adm_all_service.enums.StatusLaunch statusLaunch);
+
+    boolean existsByCollaboratorAndNoteIndicatorAppointmentDateAndStatusLaunchAndIdNot(Collaborator collaborator, LocalDate appointmentDate, com.project.adm_all_service.enums.StatusLaunch statusLaunch, Long id);
+
     // Busca lançamento pelo colaborador e data — usado para salvar o valor da diária pelo gestor
     Optional<LaunchAppointment> findByCollaborator_IdAndNoteIndicator_AppointmentDate(
             Long collaboratorId, LocalDate appointmentDate);
