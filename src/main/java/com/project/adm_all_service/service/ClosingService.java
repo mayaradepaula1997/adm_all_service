@@ -47,7 +47,8 @@ public class ClosingService {
         for (var item : request.dailyValues()) {
             LocalDate date = LocalDate.parse(item.date());
             launchAppointmentRepository
-                    .findByCollaborator_IdAndNoteIndicator_AppointmentDate(item.collaboratorId(), date)
+                    .findByCollaborator_IdAndNoteIndicator_AppointmentDateAndNoteIndicator_Enterprise_Id(
+                            item.collaboratorId(), date, request.enterpriseId())
                     .ifPresent(la -> {
                         la.setDailyValue(item.dailyValue());
                         launchAppointmentRepository.save(la);
@@ -80,9 +81,11 @@ public class ClosingService {
             end = YearMonth.of(year, month).atEndOfMonth();
         }
 
-        // Busca todos os NoteIndicators do período para a empresa e cidade
+        // Busca todos os NoteIndicators do período para a empresa (sem filtrar por cidade,
+        // para garantir que todos os colaboradores com apontamentos na empresa apareçam,
+        // independente da cidade do NoteIndicator).
         List<NoteIndicator> noteIndicators = noteIndicatorRepository
-                .findByEnterprise_IdAndCity_IdAndAppointmentDateBetween(enterpriseId, cityId, start, end);
+                .findByEnterprise_IdAndAppointmentDateBetween(enterpriseId, start, end);
 
         // Verifica se existe fechamento registrado
         Optional<Closing> existingClosing = closingRepository
@@ -104,6 +107,7 @@ public class ClosingService {
                 launchByCollaborator.computeIfAbsent(collabId, k -> new ArrayList<>()).add(la);
             }
         }
+
 
         BigDecimal totalDiarias = BigDecimal.ZERO;
         BigDecimal totalOvertimeValue = BigDecimal.ZERO;

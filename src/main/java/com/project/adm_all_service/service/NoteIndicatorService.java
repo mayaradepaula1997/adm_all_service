@@ -159,7 +159,10 @@ public class NoteIndicatorService {
             Long id,
             NoteIndicatorUpdateDto dto) {
 
-        NoteIndicator noteIndicator = noteIndicatorRepository.findById(id)
+        // JOIN FETCH garante que os LaunchAppointments estejam carregados e gerenciados
+        // pelo contexto de persistência, permitindo que o dirty-checking do Hibernate
+        // detecte as alterações e faça o flush automaticamente ao final da transação.
+        NoteIndicator noteIndicator = noteIndicatorRepository.findWithLaunchAppointmentsById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Apontamento não encontrado."));
 

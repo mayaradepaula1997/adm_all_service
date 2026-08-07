@@ -18,7 +18,7 @@ public interface LaunchAppointmentRepository extends JpaRepository<LaunchAppoint
 
     //Verifica se existe uma lançamento com aquele determinado apontamento e aquele determinando colaborador
     //Não deixar cadastrar duas vezes o mesmo colaborador em um lançamento
-    boolean existsByNoteIndicatorIdAndCollaboratorId(Long noteIndicatorId,Long collaboratorId);
+    boolean existsByNoteIndicatorIdAndCollaboratorId(Long noteIndicatorId, Long collaboratorId);
 
     boolean existsByCollaboratorAndNoteIndicatorAppointmentDate(Collaborator collaborator, LocalDate appointmentDate);
 
@@ -28,7 +28,18 @@ public interface LaunchAppointmentRepository extends JpaRepository<LaunchAppoint
 
     boolean existsByCollaboratorAndNoteIndicatorAppointmentDateAndStatusLaunchAndIdNot(Collaborator collaborator, LocalDate appointmentDate, com.project.adm_all_service.enums.StatusLaunch statusLaunch, Long id);
 
-    // Busca lançamento pelo colaborador e data — usado para salvar o valor da diária pelo gestor
-    Optional<LaunchAppointment> findByCollaborator_IdAndNoteIndicator_AppointmentDate(
+    /**
+     * Busca lançamentos pelo colaborador e data — retorna lista pois o colaborador
+     * pode ter lançamentos em múltiplas empresas na mesma data.
+     */
+    List<LaunchAppointment> findByCollaborator_IdAndNoteIndicator_AppointmentDate(
             Long collaboratorId, LocalDate appointmentDate);
+
+    /**
+     * Busca lançamento pelo colaborador, data e empresa — usado para salvar o valor
+     * da diária pelo gestor de forma precisa por empresa.
+     */
+    Optional<LaunchAppointment> findByCollaborator_IdAndNoteIndicator_AppointmentDateAndNoteIndicator_Enterprise_Id(
+            Long collaboratorId, LocalDate appointmentDate, Long enterpriseId);
 }
+

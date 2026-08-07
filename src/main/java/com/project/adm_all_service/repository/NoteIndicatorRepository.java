@@ -1,10 +1,11 @@
 package com.project.adm_all_service.repository;
 
 import com.project.adm_all_service.model.AppointmentPeriod;
-import com.project.adm_all_service.model.City;
 import com.project.adm_all_service.model.Enterprise;
 import com.project.adm_all_service.model.NoteIndicator;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,4 +29,12 @@ public interface NoteIndicatorRepository extends JpaRepository<NoteIndicator, Lo
     // Busca apontamentos por empresa em um intervalo de datas
     List<NoteIndicator> findByEnterprise_IdAndAppointmentDateBetween(
             Long enterpriseId, LocalDate start, LocalDate end);
+
+    /**
+     * Carrega o NoteIndicator junto com seus LaunchAppointments em uma única query (JOIN FETCH).
+     * Necessário para garantir que os filhos estejam gerenciados pelo contexto de persistência
+     * durante o update, evitando problemas de lazy loading fora de sessão.
+     */
+    @Query("SELECT ni FROM NoteIndicator ni LEFT JOIN FETCH ni.launchAppointments WHERE ni.id = :id")
+    Optional<NoteIndicator> findWithLaunchAppointmentsById(@Param("id") Long id);
 }
