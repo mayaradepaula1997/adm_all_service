@@ -166,33 +166,70 @@ public class NoteIndicatorService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Apontamento não encontrado."));
 
-        Map<Long, LaunchAppointment> launches =
-                noteIndicator.getLaunchAppointments()      //Pega a lista do banco
+        // Mapa dos lançamentos existentes indexado pelo ID para lookup O(1)
+        Map<Long, LaunchAppointment> launchesById =
+                noteIndicator.getLaunchAppointments()
                         .stream()
-                        .collect(Collectors.toMap(        //Transforma em um Map/Mapa
-                                LaunchAppointment::getId, //A CHAVE do mapa será o ID (Long)
-                                Function.identity()       //O VALOR será o próprio objeto completo
+                        .collect(Collectors.toMap(
+                                LaunchAppointment::getId,
+                                Function.identity()
                         ));
 
         for (LaunchAppointmentUpdateDto launchDto : dto.launchAppointments()) {
 
-            LaunchAppointment launch = launches.get(launchDto.id());
+            if (launchDto.id() != null) {
+                // CASO 1: Atualizar lançamento existente
+                LaunchAppointment launch = launchesById.get(launchDto.id());
 
-            if (launch == null) {
-                throw new ResourceNotFoundException(
-                        "Lançamento não encontrado.");
-            }
-
-            if (launchDto.statusLaunch() == com.project.adm_all_service.enums.StatusLaunch.PRESENCE) {
-                if (launchAppointmentRepository.existsByCollaboratorAndNoteIndicatorAppointmentDateAndStatusLaunchAndIdNot(
-                        launch.getCollaborator(), noteIndicator.getAppointmentDate(), com.project.adm_all_service.enums.StatusLaunch.PRESENCE, launch.getId())) {
-                    throw new BusinessException("O colaborador já possui um apontamento de presença nesta data em outra empresa.");
+                if (launch == null) {
+                    throw new ResourceNotFoundException("Lançamento não encontrado: " + launchDto.id());
                 }
-            }
 
-            launch.setStatusLaunch(launchDto.statusLaunch());
-            launch.setOvertime(launchDto.overtime());
-            launch.setObservation(launchDto.observation());
+                if (launchDto.statusLaunch() == com.project.adm_all_service.enums.StatusLaunch.PRESENCE) {
+                    if (launchAppointmentRepository.existsByCollaboratorAndNoteIndicatorAppointmentDateAndStatusLaunchAndIdNot(
+                            launch.getCollaborator(), noteIndicator.getAppointmentDate(),
+                            com.project.adm_all_service.enums.StatusLaunch.PRESENCE, launch.getId())) {
+                        throw new BusinessException("O colaborador já possui um apontamento de presença nesta data em outra empresa.");
+                    }
+                }
+
+                launch.setStatusLaunch(launchDto.statusLaunch());
+                launch.setOvertime(launchDto.overtime());
+                launch.setObservation(launchDto.observation());
+
+            } else {
+                // CASO 2: Novo lançamento para colaborador adicionado à empresa após a criação do NoteIndicator
+                if (launchDto.collaboratorId() == null) {
+                    throw new BusinessException("collaboratorId é obrigatório para novos lançamentos.");
+                }
+
+                Collaborator collaborator = collaboratorRepository.findById(launchDto.collaboratorId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Colaborador não encontrado."));
+
+                // Verifica duplicidade neste NoteIndicator
+                boolean jaExiste = noteIndicator.getLaunchAppointments().stream()
+                        .anyMatch(la -> la.getCollaborator().getId().equals(launchDto.collaboratorId()));
+                if (jaExiste) {
+                    throw new BusinessException("O colaborador já possui um lançamento neste apontamento.");
+                }
+
+                // Validação de presença duplicada em outra empresa na mesma data
+                if (launchDto.statusLaunch() == com.project.adm_all_service.enums.StatusLaunch.PRESENCE) {
+                    if (launchAppointmentRepository.existsByCollaboratorAndNoteIndicatorAppointmentDateAndStatusLaunch(
+                            collaborator, noteIndicator.getAppointmentDate(),
+                            com.project.adm_all_service.enums.StatusLaunch.PRESENCE)) {
+                        throw new BusinessException("O colaborador já possui um apontamento de presença nesta data em outra empresa.");
+                    }
+                }
+
+                LaunchAppointment newLaunch = new LaunchAppointment();
+                newLaunch.setCollaborator(collaborator);
+                newLaunch.setStatusLaunch(launchDto.statusLaunch());
+                newLaunch.setOvertime(launchDto.overtime());
+                newLaunch.setObservation(launchDto.observation());
+                newLaunch.setNoteIndicator(noteIndicator);
+                noteIndicator.getLaunchAppointments().add(newLaunch);
+            }
         }
 
         noteIndicatorRepository.save(noteIndicator);

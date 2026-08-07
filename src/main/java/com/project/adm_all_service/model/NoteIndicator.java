@@ -44,7 +44,7 @@ public class NoteIndicator {
     @Column(name = "appointment_date", nullable = false)
     private LocalDate appointmentDate;
 
-   @OneToMany(mappedBy = "noteIndicator", cascade = CascadeType.ALL)
+   @OneToMany(mappedBy = "noteIndicator", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LaunchAppointment> launchAppointments = new ArrayList<>();
 
     public NoteIndicator() {
