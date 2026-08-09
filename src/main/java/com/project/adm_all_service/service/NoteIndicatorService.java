@@ -260,30 +260,38 @@ public class NoteIndicatorService {
 
 
    //Método que valida o prazo da quinzena
-    private void validateAppointmentDeadline(
-            LocalDate appointmentDate) {
+    // Permite lançar na quinzena atual e na quinzena imediatamente anterior.
+    private void validateAppointmentDeadline(LocalDate appointmentDate) {
 
         LocalDate today = LocalDate.now();
 
-        LocalDate deadline;
+        // Calcula os limites da quinzena atual e da anterior com base na data de hoje
+        LocalDate currentFortnightStart;
+        LocalDate currentFortnightEnd;
+        LocalDate previousFortnightStart;
+        LocalDate previousFortnightEnd;
 
-        if (appointmentDate.getDayOfMonth() <= 15) {
-
-            deadline = LocalDate.of(
-                    appointmentDate.getYear(),
-                    appointmentDate.getMonth(),
-                    15);
-
+        if (today.getDayOfMonth() <= 15) {
+            // Hoje está na 1ª quinzena do mês atual
+            currentFortnightStart = LocalDate.of(today.getYear(), today.getMonth(), 1);
+            currentFortnightEnd   = LocalDate.of(today.getYear(), today.getMonth(), 15);
+            // Quinzena anterior = 2ª quinzena do mês passado
+            YearMonth lastMonth = YearMonth.from(today).minusMonths(1);
+            previousFortnightStart = LocalDate.of(lastMonth.getYear(), lastMonth.getMonth(), 16);
+            previousFortnightEnd   = lastMonth.atEndOfMonth();
         } else {
-
-            YearMonth yearMonth =
-                    YearMonth.from(appointmentDate);
-
-            deadline = yearMonth.atEndOfMonth();
+            // Hoje está na 2ª quinzena do mês atual
+            currentFortnightStart = LocalDate.of(today.getYear(), today.getMonth(), 16);
+            currentFortnightEnd   = YearMonth.from(today).atEndOfMonth();
+            // Quinzena anterior = 1ª quinzena do mês atual
+            previousFortnightStart = LocalDate.of(today.getYear(), today.getMonth(), 1);
+            previousFortnightEnd   = LocalDate.of(today.getYear(), today.getMonth(), 15);
         }
 
-        if (today.isAfter(deadline)) {
+        boolean isInCurrentFortnight  = !appointmentDate.isBefore(currentFortnightStart)  && !appointmentDate.isAfter(currentFortnightEnd);
+        boolean isInPreviousFortnight = !appointmentDate.isBefore(previousFortnightStart) && !appointmentDate.isAfter(previousFortnightEnd);
 
+        if (!isInCurrentFortnight && !isInPreviousFortnight) {
             throw new BusinessException(
                     "O prazo para lançamento desta quinzena foi encerrado.");
         }
