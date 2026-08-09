@@ -45,7 +45,7 @@ public class ClosingController {
      * POST /gestor/closing/daily-values
      */
     @PostMapping("/gestor/closing/daily-values")
-    @PreAuthorize("hasAnyRole('ADMIN_MASTER', 'GESTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN_MASTER', 'GESTOR', 'RH')")
     public ResponseEntity<Void> saveDailyValues(@RequestBody GestorSaveDailyValuesRequestDto request) {
         closingService.saveDailyValues(request);
         return ResponseEntity.ok().build();
