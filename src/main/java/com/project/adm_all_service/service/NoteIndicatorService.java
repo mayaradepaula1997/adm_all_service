@@ -97,7 +97,7 @@ public class NoteIndicatorService {
             if (launchDto.statusLaunch() == com.project.adm_all_service.enums.StatusLaunch.PRESENCE) {
                 if (launchAppointmentRepository.existsByCollaboratorAndNoteIndicatorAppointmentDateAndStatusLaunch(
                         collaborator, noteIndicatorRequestDto.appointmentDate(), com.project.adm_all_service.enums.StatusLaunch.PRESENCE)) {
-                    throw new BusinessException("O colaborador já possui um apontamento de presença nesta data em outra empresa.");
+                    throw new BusinessException("O colaborador \"" + collaborator.getName() + "\" já possui um apontamento de presença nesta data em outra empresa.");
                 }
             }
 
@@ -189,7 +189,7 @@ public class NoteIndicatorService {
                     if (launchAppointmentRepository.existsByCollaboratorAndNoteIndicatorAppointmentDateAndStatusLaunchAndIdNot(
                             launch.getCollaborator(), noteIndicator.getAppointmentDate(),
                             com.project.adm_all_service.enums.StatusLaunch.PRESENCE, launch.getId())) {
-                        throw new BusinessException("O colaborador já possui um apontamento de presença nesta data em outra empresa.");
+                        throw new BusinessException("O colaborador \"" + launch.getCollaborator().getName() + "\" já possui um apontamento de presença nesta data em outra empresa.");
                     }
                 }
 
@@ -218,7 +218,7 @@ public class NoteIndicatorService {
                     if (launchAppointmentRepository.existsByCollaboratorAndNoteIndicatorAppointmentDateAndStatusLaunch(
                             collaborator, noteIndicator.getAppointmentDate(),
                             com.project.adm_all_service.enums.StatusLaunch.PRESENCE)) {
-                        throw new BusinessException("O colaborador já possui um apontamento de presença nesta data em outra empresa.");
+                        throw new BusinessException("O colaborador \"" + collaborator.getName() + "\" já possui um apontamento de presença nesta data em outra empresa.");
                     }
                 }
 
