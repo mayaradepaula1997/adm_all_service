@@ -1,5 +1,6 @@
 package com.project.adm_all_service.config;
 
+import com.project.adm_all_service.exception.BusinessException;
 import com.project.adm_all_service.exception.ResourceNotFoundException;
 import com.project.adm_all_service.model.User;
 import com.project.adm_all_service.repository.UserRepository;
@@ -8,6 +9,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,6 +21,8 @@ import java.io.IOException;
 
 @Configuration
 public class SecurityFilter extends OncePerRequestFilter { //A cada requisição que houver vai passa por esse classe antes
+
+    private static final Logger log = LoggerFactory.getLogger(SecurityFilter.class);
 
     private AutenticationService autenticationService;
 
@@ -53,15 +58,22 @@ public class SecurityFilter extends OncePerRequestFilter { //A cada requisição
 
         String token = extractTokenHeader(request); //Chama o método que vai extrair o token
 
-        if (token != null){
+        if (token != null) {
+            try {
+                String login = autenticationService.validarTokenJwt(token); //O token é validado é extraido email/login
+                User user = userRepository.findByEmail(login)
+                        .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado")); //Busca o usuário pelo e-mail
 
-            String login = autenticationService.validarTokenJwt(token); //O token é validado é extraido email/login
-            User user = userRepository.findByEmail(login)
-                    .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado")); //Busca o usuário pelo e-mail
+                Authentication autentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
 
-            Authentication autentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-
-            SecurityContextHolder.getContext().setAuthentication(autentication);
+                SecurityContextHolder.getContext().setAuthentication(autentication);
+            } catch (BusinessException | ResourceNotFoundException e) {
+                // Token inválido ou expirado: retorna 401 sem propagar a exceção.
+                // Logar como WARN (sem stack trace) para não spammar os logs.
+                log.warn("Requisição rejeitada - token inválido: {}", e.getMessage());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);
