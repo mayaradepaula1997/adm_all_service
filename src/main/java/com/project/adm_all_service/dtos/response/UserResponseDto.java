@@ -8,8 +8,7 @@ import java.util.Set;
 public record UserResponseDto(Long id,
                               String name,
                               String email,
-                              Set<Role>roleSet,
-                              Long cityId,
-                              String cityName,
+                              Set<Role> roleSet,
+                              List<CitySimpleDto> cities,
                               List<EnterpriseSimpleDto> enterprises) {
 }

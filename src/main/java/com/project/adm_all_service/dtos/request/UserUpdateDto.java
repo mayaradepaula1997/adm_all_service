@@ -8,6 +8,6 @@ public record UserUpdateDto(String name,
                             String email,
                             String password,
                             Set<Role> roles,
-                            Long cityId,
+                            Set<Long> cityIds,
                             Set<Long> enterpriseIds) {
 }

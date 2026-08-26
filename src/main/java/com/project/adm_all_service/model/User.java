@@ -39,9 +39,13 @@ public class User implements UserDetails {
     private Set<Role> roles = new HashSet<>();
 
     //RELACIONAMENTOS
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "city_id") // FK no banco
-    private City city;            //Varios usuários estão relacionados a uma cidade
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_cities",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "city_id")
+    )
+    private Set<City> cities = new HashSet<>();  //Um usuário pode estar relacionado a várias cidades
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -59,12 +63,12 @@ public class User implements UserDetails {
     }
 
     //Construtor com argumentos
-    public User(String name, String email, Set<Role> roles, String password, City city, Set<Enterprise> enterprises) {
+    public User(String name, String email, Set<Role> roles, String password, Set<City> cities, Set<Enterprise> enterprises) {
         this.name = name;
         this.email = email;
         this.roles = roles;
         this.password = password;
-        this.city = city;
+        this.cities = cities;
         this.enterprises = enterprises;
     }
 
@@ -101,12 +105,12 @@ public class User implements UserDetails {
         this.roles = roles;
     }
 
-    public City getCity() {
-        return city;
+    public Set<City> getCities() {
+        return cities;
     }
 
-    public void setCity(City city) {
-        this.city = city;
+    public void setCities(Set<City> cities) {
+        this.cities = cities;
     }
 
     public Set<Enterprise> getEnterprises() {

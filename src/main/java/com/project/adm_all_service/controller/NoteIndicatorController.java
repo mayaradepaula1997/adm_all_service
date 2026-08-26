@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/apontador/note-indicators")
-@PreAuthorize("hasAnyRole('ADMIN_MASTER', 'APONTADOR')")
+@PreAuthorize("hasAnyRole('ADMIN_MASTER', 'APONTADOR', 'GESTOR')")
 public class NoteIndicatorController {
 
     private NoteIndicatorService noteIndicatorService;
