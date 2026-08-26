@@ -29,7 +29,7 @@ public class City {
 
     //RELACIONAMENTO
     @JsonIgnore
-    @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "cities")
     private List<User> users = new ArrayList<>();        //Uma cidade pode ter varios usuários
 
     @JsonIgnore             //Evita loop
