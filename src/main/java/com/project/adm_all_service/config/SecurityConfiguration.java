@@ -35,16 +35,13 @@ public class SecurityConfiguration {
     //Método responsavel pela hierarquia de permissões, o que cada perfil pode acessar (herança de perfil)
     @Bean
     public RoleHierarchy roleHierarchy() {  //Cria e retorna a hierarquia de permissoes (herança de roles)
-        return RoleHierarchyImpl.fromHierarchy("""                    
-                            
+        return RoleHierarchyImpl.fromHierarchy("""
                         ROLE_ADMIN_MASTER > ROLE_RH
                         ROLE_ADMIN_MASTER > ROLE_GESTOR
                         ROLE_ADMIN_MASTER > ROLE_APONTADOR
-                       
+                        ROLE_GESTOR > ROLE_APONTADOR
+                        ROLE_RH > ROLE_APONTADOR
                    """);
-
-        // ROLE_RH > ROLE_APONTADOR
-        // ROLE_GESTOR > ROLE_APONTADOR
 
     }
 
@@ -75,7 +72,7 @@ public class SecurityConfiguration {
                        .requestMatchers("/admin/**").hasRole("ADMIN_MASTER")
                         //.requestMatchers("/rh/**").hasAnyRole("ADMIN_MASTER", "RH")
                        // .requestMatchers("/gestor/**").hasAnyRole("ADMIN_MASTER", "GESTOR")
-                        .requestMatchers("/apontador/**").hasAnyRole("ADMIN_MASTER", "APONTADOR")
+                        .requestMatchers("/apontador/**").hasAnyRole("ADMIN_MASTER", "APONTADOR", "GESTOR", "RH")
                         .anyRequest().authenticated()  //Qualquer outra rota precisa estar autenticada
 
                 )

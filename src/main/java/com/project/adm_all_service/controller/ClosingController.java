@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -60,6 +61,18 @@ public class ClosingController {
     public ResponseEntity<Map<String, Object>> getFortnightSummary(@PathVariable Long id) {
         Map<String, Object> summary = closingService.getCollaboratorFortnightSummary(id);
         return ResponseEntity.ok(summary);
+    }
+
+    /**
+     * Retorna o resumo da quinzena atual de TODOS os colaboradores em uma única chamada.
+     * Elimina o N+1 da listagem de colaboradores do RH.
+     * GET /collaborators/fortnight-summary/bulk
+     */
+    @GetMapping("/collaborators/fortnight-summary/bulk")
+    @PreAuthorize("hasAnyRole('ADMIN_MASTER', 'RH', 'APONTADOR')")
+    public ResponseEntity<List<Map<String, Object>>> getAllFortnightSummaries() {
+        List<Map<String, Object>> summaries = closingService.getAllCollaboratorFortnightSummaries();
+        return ResponseEntity.ok(summaries);
     }
 }
 

@@ -41,5 +41,18 @@ public interface LaunchAppointmentRepository extends JpaRepository<LaunchAppoint
      */
     Optional<LaunchAppointment> findByCollaborator_IdAndNoteIndicator_AppointmentDateAndNoteIndicator_Enterprise_Id(
             Long collaboratorId, LocalDate appointmentDate, Long enterpriseId);
+    /**
+     * Busca todos os lançamentos de um período (para o bulk summary).
+     * Usa JOIN FETCH para evitar N+1 ao acessar collaborator e noteIndicator.
+     */
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT la FROM LaunchAppointment la " +
+        "JOIN FETCH la.collaborator " +
+        "JOIN FETCH la.noteIndicator ni " +
+        "WHERE ni.appointmentDate BETWEEN :start AND :end"
+    )
+    List<LaunchAppointment> findAllWithCollaboratorByPeriod(
+            @org.springframework.data.repository.query.Param("start") LocalDate start,
+            @org.springframework.data.repository.query.Param("end") LocalDate end);
 }
 

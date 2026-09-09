@@ -234,32 +234,19 @@ public class ClosingService {
             fortnight = 2;
         }
 
-        // Busca todos os lançamentos do colaborador no período
-        List<NoteIndicator> noteIndicators = noteIndicatorRepository
-                .findByEnterprise_IdAndAppointmentDateBetween(0L, start, end); // placeholder
+        List<LaunchAppointment> periodLaunches = launchAppointmentRepository
+                .findAllWithCollaboratorByPeriod(start, end);
 
-        // Query específica por colaborador via LaunchAppointment
         long presenceDays = 0;
         BigDecimal overtimeTotal = BigDecimal.ZERO;
 
-        // Buscamos via todos os NoteIndicators e filtramos por collaboratorId
-        List<NoteIndicator> all = noteIndicatorRepository
-                .findByEnterprise_IdAndAppointmentDateBetween(null, start, end);
-
-        // Usamos query mais simples - busca todos do período e filtra
-        List<NoteIndicator> allPeriod = noteIndicatorRepository.findAll().stream()
-                .filter(ni -> !ni.getAppointmentDate().isBefore(start) && !ni.getAppointmentDate().isAfter(end))
-                .collect(Collectors.toList());
-
-        for (NoteIndicator ni : allPeriod) {
-            for (LaunchAppointment la : ni.getLaunchAppointments()) {
-                if (la.getCollaborator() != null && la.getCollaborator().getId().equals(collaboratorId)) {
-                    if (la.getStatusLaunch() == StatusLaunch.PRESENCE) {
-                        presenceDays++;
-                    }
-                    if (la.getOvertime() != null) {
-                        overtimeTotal = overtimeTotal.add(la.getOvertime());
-                    }
+        for (LaunchAppointment la : periodLaunches) {
+            if (la.getCollaborator() != null && la.getCollaborator().getId().equals(collaboratorId)) {
+                if (la.getStatusLaunch() == StatusLaunch.PRESENCE) {
+                    presenceDays++;
+                }
+                if (la.getOvertime() != null) {
+                    overtimeTotal = overtimeTotal.add(la.getOvertime());
                 }
             }
         }
@@ -273,5 +260,66 @@ public class ClosingService {
         summary.put("overtimeHours", overtimeTotal);
 
         return summary;
+    }
+
+    /**
+     * Resumo da quinzena atual para TODOS os colaboradores — 1 única query.
+     * Usado pela listagem de RH para evitar N+1.
+     */
+    public List<Map<String, Object>> getAllCollaboratorFortnightSummaries() {
+        LocalDate today = LocalDate.now();
+        LocalDate start;
+        LocalDate end;
+        int fortnight;
+
+        if (today.getDayOfMonth() <= 15) {
+            start = LocalDate.of(today.getYear(), today.getMonth(), 1);
+            end = LocalDate.of(today.getYear(), today.getMonth(), 15);
+            fortnight = 1;
+        } else {
+            start = LocalDate.of(today.getYear(), today.getMonth(), 16);
+            end = YearMonth.from(today).atEndOfMonth();
+            fortnight = 2;
+        }
+
+        List<LaunchAppointment> periodLaunches = launchAppointmentRepository
+                .findAllWithCollaboratorByPeriod(start, end);
+
+        // Agrupa por collaboratorId em memória (já é 1 única query)
+        Map<Long, long[]> presenceByCollaborator = new LinkedHashMap<>();
+        Map<Long, BigDecimal> overtimeByCollaborator = new LinkedHashMap<>();
+
+        for (LaunchAppointment la : periodLaunches) {
+            if (la.getCollaborator() == null) continue;
+            Long collabId = la.getCollaborator().getId();
+
+            if (la.getStatusLaunch() == StatusLaunch.PRESENCE) {
+                presenceByCollaborator.merge(collabId, new long[]{1}, (a, b) -> new long[]{a[0] + 1});
+            }
+            if (la.getOvertime() != null) {
+                overtimeByCollaborator.merge(collabId, la.getOvertime(), BigDecimal::add);
+            }
+        }
+
+        // Une os dois mapas em uma lista de summaries
+        Set<Long> allCollabIds = new LinkedHashSet<>();
+        allCollabIds.addAll(presenceByCollaborator.keySet());
+        allCollabIds.addAll(overtimeByCollaborator.keySet());
+
+        final int currentFortnight = fortnight;
+        final LocalDate periodStart = start;
+        final LocalDate periodEnd = end;
+
+        return allCollabIds.stream().map(collabId -> {
+            Map<String, Object> summary = new LinkedHashMap<>();
+            summary.put("collaboratorId", collabId);
+            summary.put("fortnight", currentFortnight);
+            summary.put("periodStart", periodStart.toString());
+            summary.put("periodEnd", periodEnd.toString());
+            long[] days = presenceByCollaborator.getOrDefault(collabId, new long[]{0});
+            summary.put("totalDays", days[0]);
+            summary.put("overtimeHours", overtimeByCollaborator.getOrDefault(collabId, BigDecimal.ZERO));
+            return summary;
+        }).collect(Collectors.toList());
     }
 }
