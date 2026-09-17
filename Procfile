@@ -1,0 +1,1 @@
+web: java -Xms128m -Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -jar target/*.jar
