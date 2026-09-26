@@ -5,5 +5,7 @@ import java.util.List;
 
 public record DashboardSummaryResponseDto(
     List<DashboardExpenseDto> expenses,
-    BigDecimal globalTotal
+    BigDecimal globalTotal,
+    BigDecimal previousGlobalTotal,
+    BigDecimal growthPercentage
 ) {}

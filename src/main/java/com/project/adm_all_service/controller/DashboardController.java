@@ -38,4 +38,15 @@ public class DashboardController {
         
         return ResponseEntity.ok(dashboardService.getEvolution(year, enterpriseId));
     }
+
+    @GetMapping("/details")
+    @PreAuthorize("hasAnyRole('ADMIN_MASTER', 'SUPER_ADMIN')")
+    public ResponseEntity<List<com.project.adm_all_service.dtos.response.DashboardCollaboratorExpenseDto>> getDetails(
+            @RequestParam Integer month,
+            @RequestParam Integer year,
+            @RequestParam(required = false) Integer fortnight,
+            @RequestParam(required = false) Long enterpriseId) {
+        
+        return ResponseEntity.ok(dashboardService.getDetails(month, year, fortnight, enterpriseId));
+    }
 }
