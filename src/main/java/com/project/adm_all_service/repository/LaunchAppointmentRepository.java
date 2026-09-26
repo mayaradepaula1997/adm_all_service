@@ -54,5 +54,19 @@ public interface LaunchAppointmentRepository extends JpaRepository<LaunchAppoint
     List<LaunchAppointment> findAllWithCollaboratorByPeriod(
             @org.springframework.data.repository.query.Param("start") LocalDate start,
             @org.springframework.data.repository.query.Param("end") LocalDate end);
-}
 
+    /**
+     * Busca lançamentos de um colaborador específico em um período.
+     * Filtra no banco em vez de carregar tudo na memória.
+     */
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT la FROM LaunchAppointment la " +
+        "JOIN FETCH la.noteIndicator ni " +
+        "WHERE la.collaborator.id = :collaboratorId " +
+        "AND ni.appointmentDate BETWEEN :start AND :end"
+    )
+    List<LaunchAppointment> findByCollaboratorAndPeriod(
+            @org.springframework.data.repository.query.Param("collaboratorId") Long collaboratorId,
+            @org.springframework.data.repository.query.Param("start") LocalDate start,
+            @org.springframework.data.repository.query.Param("end") LocalDate end);
+}

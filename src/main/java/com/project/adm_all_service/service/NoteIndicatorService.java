@@ -112,8 +112,6 @@ public class NoteIndicatorService {
         }
         NoteIndicator saved = noteIndicatorRepository.save(noteIndicator);
 
-        System.out.println("Salvou o NoteIndicator com id: " + saved.getId());
-
         return NoteIndicatorMapper.toDto(saved);
     }
 

@@ -37,4 +37,18 @@ public interface NoteIndicatorRepository extends JpaRepository<NoteIndicator, Lo
      */
     @Query("SELECT ni FROM NoteIndicator ni LEFT JOIN FETCH ni.launchAppointments WHERE ni.id = :id")
     Optional<NoteIndicator> findWithLaunchAppointmentsById(@Param("id") Long id);
+
+    /**
+     * Carrega NoteIndicators com LaunchAppointments e Collaborators em uma única query.
+     * Elimina o N+1 no generateClosing().
+     */
+    @Query("SELECT DISTINCT ni FROM NoteIndicator ni " +
+           "LEFT JOIN FETCH ni.launchAppointments la " +
+           "LEFT JOIN FETCH la.collaborator " +
+           "WHERE ni.enterprise.id = :enterpriseId " +
+           "AND ni.appointmentDate BETWEEN :start AND :end")
+    List<NoteIndicator> findByEnterpriseWithLaunchesAndCollaborators(
+            @Param("enterpriseId") Long enterpriseId,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end);
 }

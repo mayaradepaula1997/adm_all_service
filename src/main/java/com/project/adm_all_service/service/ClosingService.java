@@ -81,11 +81,10 @@ public class ClosingService {
             end = YearMonth.of(year, month).atEndOfMonth();
         }
 
-        // Busca todos os NoteIndicators do período para a empresa (sem filtrar por cidade,
-        // para garantir que todos os colaboradores com apontamentos na empresa apareçam,
-        // independente da cidade do NoteIndicator).
+        // Busca todos os NoteIndicators do período para a empresa com JOIN FETCH
+        // (carrega LaunchAppointments e Collaborators em uma única query, eliminando N+1).
         List<NoteIndicator> noteIndicators = noteIndicatorRepository
-                .findByEnterprise_IdAndAppointmentDateBetween(enterpriseId, start, end);
+                .findByEnterpriseWithLaunchesAndCollaborators(enterpriseId, start, end);
 
         // Verifica se existe fechamento registrado
         Optional<Closing> existingClosing = closingRepository
@@ -235,19 +234,17 @@ public class ClosingService {
         }
 
         List<LaunchAppointment> periodLaunches = launchAppointmentRepository
-                .findAllWithCollaboratorByPeriod(start, end);
+                .findByCollaboratorAndPeriod(collaboratorId, start, end);
 
         long presenceDays = 0;
         BigDecimal overtimeTotal = BigDecimal.ZERO;
 
         for (LaunchAppointment la : periodLaunches) {
-            if (la.getCollaborator() != null && la.getCollaborator().getId().equals(collaboratorId)) {
-                if (la.getStatusLaunch() == StatusLaunch.PRESENCE) {
-                    presenceDays++;
-                }
-                if (la.getOvertime() != null) {
-                    overtimeTotal = overtimeTotal.add(la.getOvertime());
-                }
+            if (la.getStatusLaunch() == StatusLaunch.PRESENCE) {
+                presenceDays++;
+            }
+            if (la.getOvertime() != null) {
+                overtimeTotal = overtimeTotal.add(la.getOvertime());
             }
         }
 

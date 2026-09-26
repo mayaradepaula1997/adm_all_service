@@ -5,16 +5,23 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface ClosingRepository extends JpaRepository<Closing, Long> , JpaSpecificationExecutor<Closing> {
 
     //Busca o fechamento que tenha o id da empresa e a data informada (mês e ano)
     Optional<Closing> findByEnterprise_IdAndMonthAndYear(Long enterpriseId,Integer month,Integer year);
 
-
     //Busca o fechamento pela empresa, mês, ano e pela quinzena
     Optional<Closing> findByEnterprise_IdAndMonthAndYearAndFortnight(Long enterpriseId,Integer month,Integer year,Integer fortnight);
 
+    //Busca todos os fechamentos de um mês e ano
+    List<Closing> findByMonthAndYear(Integer month, Integer year);
 
+    //Busca todos os fechamentos de uma quinzena específica
+    List<Closing> findByMonthAndYearAndFortnight(Integer month, Integer year, Integer fortnight);
+
+    //Busca todos os fechamentos de um ano (para evolução)
+    List<Closing> findByYear(Integer year);
 
 }
