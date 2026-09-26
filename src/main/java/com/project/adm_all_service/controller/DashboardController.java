@@ -24,16 +24,18 @@ public class DashboardController {
     public ResponseEntity<DashboardSummaryResponseDto> getSummary(
             @RequestParam Integer month,
             @RequestParam Integer year,
-            @RequestParam(required = false) Integer fortnight) {
+            @RequestParam(required = false) Integer fortnight,
+            @RequestParam(required = false) Long enterpriseId) {
         
-        return ResponseEntity.ok(dashboardService.getSummary(month, year, fortnight));
+        return ResponseEntity.ok(dashboardService.getSummary(month, year, fortnight, enterpriseId));
     }
 
     @GetMapping("/evolution")
     @PreAuthorize("hasAnyRole('ADMIN_MASTER', 'SUPER_ADMIN')")
     public ResponseEntity<List<DashboardEvolutionDto>> getEvolution(
-            @RequestParam Integer year) {
+            @RequestParam Integer year,
+            @RequestParam(required = false) Long enterpriseId) {
         
-        return ResponseEntity.ok(dashboardService.getEvolution(year));
+        return ResponseEntity.ok(dashboardService.getEvolution(year, enterpriseId));
     }
 }
