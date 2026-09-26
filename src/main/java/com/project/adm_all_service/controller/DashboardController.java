@@ -20,7 +20,7 @@ public class DashboardController {
     }
 
     @GetMapping("/summary")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN_MASTER', 'SUPER_ADMIN')")
     public ResponseEntity<DashboardSummaryResponseDto> getSummary(
             @RequestParam Integer month,
             @RequestParam Integer year,
@@ -30,7 +30,7 @@ public class DashboardController {
     }
 
     @GetMapping("/evolution")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN_MASTER', 'SUPER_ADMIN')")
     public ResponseEntity<List<DashboardEvolutionDto>> getEvolution(
             @RequestParam Integer year) {
         
