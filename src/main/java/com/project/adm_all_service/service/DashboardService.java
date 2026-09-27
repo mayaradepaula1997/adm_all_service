@@ -36,7 +36,7 @@ public class DashboardService {
         return daily.add(overtimeValue);
     }
 
-    public DashboardSummaryResponseDto getSummary(Integer month, Integer year, Integer fortnight, Long enterpriseId) {
+    public DashboardSummaryResponseDto getSummary(Integer month, Integer year, Integer fortnight, List<Long> enterpriseId) {
         LocalDate start;
         LocalDate end;
         LocalDate prevStart;
@@ -80,7 +80,7 @@ public class DashboardService {
             
             Long entId = la.getNoteIndicator().getEnterprise().getId();
             // Filtro por empresa
-            if (enterpriseId != null && !entId.equals(enterpriseId)) continue;
+            if (enterpriseId != null && !enterpriseId.isEmpty() && !enterpriseId.contains(entId)) continue;
 
             String entName = la.getNoteIndicator().getEnterprise().getName();
             BigDecimal expense = calculateExpense(la);
@@ -93,7 +93,7 @@ public class DashboardService {
         for (LaunchAppointment la : prevLaunches) {
             if (la.getNoteIndicator() == null || la.getNoteIndicator().getEnterprise() == null) continue;
             Long entId = la.getNoteIndicator().getEnterprise().getId();
-            if (enterpriseId != null && !entId.equals(enterpriseId)) continue;
+            if (enterpriseId != null && !enterpriseId.isEmpty() && !enterpriseId.contains(entId)) continue;
             prevGlobalTotal = prevGlobalTotal.add(calculateExpense(la));
         }
 
@@ -113,7 +113,7 @@ public class DashboardService {
         return new DashboardSummaryResponseDto(sortedExpenses, globalTotal, prevGlobalTotal, growthPercentage);
     }
 
-    public List<com.project.adm_all_service.dtos.response.DashboardCollaboratorExpenseDto> getDetails(Integer month, Integer year, Integer fortnight, Long enterpriseId) {
+    public List<com.project.adm_all_service.dtos.response.DashboardCollaboratorExpenseDto> getDetails(Integer month, Integer year, Integer fortnight, List<Long> enterpriseId) {
         LocalDate start;
         LocalDate end;
         if (fortnight != null) {
@@ -135,7 +135,7 @@ public class DashboardService {
 
         for (LaunchAppointment la : launches) {
             if (la.getNoteIndicator() == null || la.getNoteIndicator().getEnterprise() == null) continue;
-            if (enterpriseId != null && !la.getNoteIndicator().getEnterprise().getId().equals(enterpriseId)) continue;
+            if (enterpriseId != null && !enterpriseId.isEmpty() && !enterpriseId.contains(la.getNoteIndicator().getEnterprise().getId())) continue;
             if (la.getCollaborator() == null) continue;
 
             Long collabId = la.getCollaborator().getId();
@@ -170,7 +170,7 @@ public class DashboardService {
                 .collect(Collectors.toList());
     }
 
-    public List<DashboardEvolutionDto> getEvolution(Integer year, Long enterpriseId) {
+    public List<DashboardEvolutionDto> getEvolution(Integer year, List<Long> enterpriseId) {
         LocalDate start = LocalDate.of(year, 1, 1);
         LocalDate end = LocalDate.of(year, 12, 31);
         List<LaunchAppointment> launches = launchAppointmentRepository.findAllWithCollaboratorByPeriod(start, end);
@@ -182,7 +182,7 @@ public class DashboardService {
             if (la.getNoteIndicator().getEnterprise() == null) continue;
             
             // Filtro por empresa
-            if (enterpriseId != null && !la.getNoteIndicator().getEnterprise().getId().equals(enterpriseId)) continue;
+            if (enterpriseId != null && !enterpriseId.isEmpty() && !enterpriseId.contains(la.getNoteIndicator().getEnterprise().getId())) continue;
 
             LocalDate date = la.getNoteIndicator().getAppointmentDate();
             int m = date.getMonthValue();
